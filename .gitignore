@@ -1,0 +1,6 @@
+.DS_Store
+build/
+DerivedData/
+__pycache__/
+# Generated from project.yml by `xcodegen generate`
+Pinakes.xcodeproj/

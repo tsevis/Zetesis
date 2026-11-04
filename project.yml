@@ -1,0 +1,54 @@
+name: Pinakes
+options:
+  bundleIdPrefix: com.tsevis
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+targets:
+  Pinakes:
+    type: application
+    platform: macOS
+    sources:
+      - path: Pinakes
+      # The indexing engine (Python), copied whole into Resources/Engine.
+      - path: Engine
+        type: folder
+        buildPhase: resources
+        excludes: ["__pycache__", "**/__pycache__"]
+    settings:
+      base:
+        PRODUCT_NAME: Pinakes
+        PRODUCT_BUNDLE_IDENTIFIER: com.tsevis.pinakes
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Pinakes
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.reference
+        INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Charis Tsevis"
+        INFOPLIST_KEY_NSRemovableVolumesUsageDescription: "Pinakes διαβάζει τα βιβλία της βιβλιοθήκης σου από τον εξωτερικό δίσκο."
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        DEVELOPMENT_LANGUAGE: el
+        ENABLE_HARDENED_RUNTIME: NO
+        ENABLE_APP_SANDBOX: NO
+  PinakesTests:
+    type: bundle.unit-test
+    platform: macOS
+    # Hostless: the model sources are compiled into the bundle so a test run never opens a window.
+    sources: [PinakesTests, Pinakes/Model]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Pinakes:
+    build:
+      targets:
+        Pinakes: all
+        PinakesTests: [test]
+    test:
+      targets: [PinakesTests]
