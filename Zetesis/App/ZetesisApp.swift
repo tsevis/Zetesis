@@ -1,11 +1,11 @@
 import SwiftUI
 
 @main
-struct PinakesApp: App {
+struct ZetesisApp: App {
     @State private var model = LibraryModel()
 
     var body: some Scene {
-        Window("Pinakes", id: "main") {
+        Window("Zetesis", id: "main") {
             ContentView()
                 .environment(model)
                 .frame(minWidth: 960, minHeight: 600)

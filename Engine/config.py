@@ -1,6 +1,6 @@
 """Where the library, its working data and its index live. Every engine script reads its paths here.
 
-The library folder comes from PINAKES_LIBRARY (the app sets it); its working data (inventory, topics,
+The library folder comes from ZETESIS_LIBRARY (the app sets it); its working data (inventory, topics,
 text cache) sits inside it in _SEARCH, and the index on the internal disk, one file per library.
 """
 import hashlib
@@ -12,14 +12,14 @@ from pathlib import Path
 
 DATA_DIRNAME = "_SEARCH"
 TOPICS_DIRNAME = "_ΘΕΜΑΤΑ"
-APP_SUPPORT = Path.home() / "Library" / "Application Support" / "Pinakes"
-LOG = Path.home() / "Library" / "Logs" / "Pinakes.log"
+APP_SUPPORT = Path.home() / "Library" / "Application Support" / "Zetesis"
+LOG = Path.home() / "Library" / "Logs" / "Zetesis.log"
 
 
 def _library() -> Path:
-    raw = os.environ.get("PINAKES_LIBRARY")
+    raw = os.environ.get("ZETESIS_LIBRARY")
     if not raw:
-        sys.exit("PINAKES_LIBRARY is not set: the path of the library folder is needed.")
+        sys.exit("ZETESIS_LIBRARY is not set: the path of the library folder is needed.")
     return Path(raw).expanduser().resolve()
 
 
@@ -39,8 +39,8 @@ SKIP_DIRS = {DATA_DIRNAME, TOPICS_DIRNAME}
 
 
 def current_db() -> Path | None:
-    if os.environ.get("PINAKES_DB"):
-        return Path(os.environ["PINAKES_DB"])
+    if os.environ.get("ZETESIS_DB"):
+        return Path(os.environ["ZETESIS_DB"])
     try:
         return APP_SUPPORT / json.loads(POINTER.read_text())["db"]
     except (OSError, ValueError, KeyError):
@@ -48,14 +48,14 @@ def current_db() -> Path | None:
 
 
 def new_db_path() -> Path:
-    if os.environ.get("PINAKES_DB"):
-        return Path(os.environ["PINAKES_DB"])
+    if os.environ.get("ZETESIS_DB"):
+        return Path(os.environ["ZETESIS_DB"])
     return APP_SUPPORT / f"{LIBRARY_ID}-{time.strftime('%Y%m%d-%H%M%S')}.db"
 
 
 def point_to(db: Path) -> None:
     """Make db the index in use and delete older ones (open readers keep their file until they close)."""
-    if os.environ.get("PINAKES_DB"):
+    if os.environ.get("ZETESIS_DB"):
         return
     tmp = POINTER.with_suffix(".tmp")
     tmp.write_text(json.dumps({"db": db.name, "library": str(ROOT)}, ensure_ascii=False))

@@ -6,7 +6,7 @@ enum BackgroundAgent {
 
     static var isInstalled: Bool {
         let names = (try? FileManager.default.contentsOfDirectory(atPath: agents.path)) ?? []
-        return names.contains { $0.hasPrefix("com.tsevis.pinakes.update.") }
+        return names.contains { $0.hasPrefix("com.tsevis.zetesis.update.") }
     }
 
     static func set(_ on: Bool, library: URL) async throws {

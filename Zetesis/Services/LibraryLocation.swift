@@ -3,8 +3,8 @@ import Foundation
 /// Where things are: the library folder the user chose, and the index the engine keeps for it.
 enum LibraryLocation {
     static let supportFolder = FileManager.default.homeDirectoryForCurrentUser
-        .appending(path: "Library/Application Support/Pinakes", directoryHint: .isDirectory)
-    static let log = FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Logs/Pinakes.log")
+        .appending(path: "Library/Application Support/Zetesis", directoryHint: .isDirectory)
+    static let log = FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Logs/Zetesis.log")
     private static let libraryKey = "libraryPath"
 
     static var library: URL? {

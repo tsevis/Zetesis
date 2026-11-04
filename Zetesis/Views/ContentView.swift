@@ -98,10 +98,10 @@ struct Onboarding: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label("Pinakes", systemImage: "books.vertical")
+            Label("Zetesis", systemImage: "books.vertical")
         } description: {
             Text("Διάλεξε τον φάκελο με τα βιβλία σου (PDF, EPUB, φακέλους md). "
-                 + "Τίποτα δεν μετακινείται: το Pinakes διαβάζει, ταξινομεί και ψάχνει μέσα σε όλα.")
+                 + "Τίποτα δεν μετακινείται: το Zetesis διαβάζει, ταξινομεί και ψάχνει μέσα σε όλα.")
         } actions: {
             Button("Επιλογή φακέλου…") { FolderPicker.chooseLibrary(for: model) }
                 .buttonStyle(.borderedProminent)

@@ -12,7 +12,7 @@ from pathlib import Path
 from config import LIBRARY_ID, LOG, ROOT
 
 HERE = Path(__file__).resolve().parent
-LABEL = f"com.tsevis.pinakes.update.{LIBRARY_ID}"
+LABEL = f"com.tsevis.zetesis.update.{LIBRARY_ID}"
 PLIST = Path.home() / "Library" / "LaunchAgents" / f"{LABEL}.plist"
 HOURLY_S = 3600
 THROTTLE_S = 60
@@ -37,7 +37,7 @@ def install() -> int:
         "WatchPaths": [str(ROOT)],
         "StartInterval": HOURLY_S,
         "ThrottleInterval": THROTTLE_S,
-        "EnvironmentVariables": {"PATH": TOOL_PATH, "PINAKES_LIBRARY": str(ROOT)},
+        "EnvironmentVariables": {"PATH": TOOL_PATH, "ZETESIS_LIBRARY": str(ROOT)},
         "StandardOutPath": str(LOG),
         "StandardErrorPath": str(LOG),
         "Nice": 10,

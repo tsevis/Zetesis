@@ -1,4 +1,4 @@
-name: Pinakes
+name: Zetesis
 options:
   bundleIdPrefix: com.tsevis
   deploymentTarget:
@@ -11,11 +11,11 @@ settings:
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGN_STYLE: Manual
 targets:
-  Pinakes:
+  Zetesis:
     type: application
     platform: macOS
     sources:
-      - path: Pinakes
+      - path: Zetesis
       # The indexing engine (Python), copied whole into Resources/Engine.
       - path: Engine
         type: folder
@@ -23,32 +23,32 @@ targets:
         excludes: ["__pycache__", "**/__pycache__"]
     settings:
       base:
-        PRODUCT_NAME: Pinakes
-        PRODUCT_BUNDLE_IDENTIFIER: com.tsevis.pinakes
+        PRODUCT_NAME: Zetesis
+        PRODUCT_BUNDLE_IDENTIFIER: com.tsevis.zetesis
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Pinakes
+        INFOPLIST_KEY_CFBundleDisplayName: Zetesis
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.reference
         INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Charis Tsevis"
-        INFOPLIST_KEY_NSRemovableVolumesUsageDescription: "Pinakes διαβάζει τα βιβλία της βιβλιοθήκης σου από τον εξωτερικό δίσκο."
+        INFOPLIST_KEY_NSRemovableVolumesUsageDescription: "Το Zetesis διαβάζει τα βιβλία της βιβλιοθήκης σου από τον εξωτερικό δίσκο."
         MARKETING_VERSION: "0.1.0"
         CURRENT_PROJECT_VERSION: "1"
         DEVELOPMENT_LANGUAGE: el
-        ENABLE_HARDENED_RUNTIME: NO
+        ENABLE_HARDENED_RUNTIME: YES
         ENABLE_APP_SANDBOX: NO
-  PinakesTests:
+  ZetesisTests:
     type: bundle.unit-test
     platform: macOS
     # Hostless: the model sources are compiled into the bundle so a test run never opens a window.
-    sources: [PinakesTests, Pinakes/Model]
+    sources: [ZetesisTests, Zetesis/Model]
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
 schemes:
-  Pinakes:
+  Zetesis:
     build:
       targets:
-        Pinakes: all
-        PinakesTests: [test]
+        Zetesis: all
+        ZetesisTests: [test]
     test:
-      targets: [PinakesTests]
+      targets: [ZetesisTests]

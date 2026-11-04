@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Draws Pinakes' application icon: a black-figure Π on Attic clay, over a meander band.
+"""Draws Zetesis' application icon: a black-figure Ζ on Attic clay, over a meander band.
 
-Writes every size of Pinakes/Resources/Assets.xcassets/AppIcon.appiconset and the accent colour.
+Writes every size of Zetesis/Resources/Assets.xcassets/AppIcon.appiconset and the accent colour.
 Run from the repository root:  python3 Scripts/make-icon.py
 """
 import json
@@ -10,7 +10,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
-ASSETS = ROOT / "Pinakes" / "Resources" / "Assets.xcassets"
+ASSETS = ROOT / "Zetesis" / "Resources" / "Assets.xcassets"
 ICONSET = ASSETS / "AppIcon.appiconset"
 SIZE = 1024
 MARGIN = 100  # macOS icon grid: the tile is 824 px inside a 1024 canvas
@@ -54,10 +54,10 @@ def icon() -> Image.Image:
     meander(draw, (tile - 24 * unit) // 2, band_top + unit // 2, 24 * unit, unit)
     draw.rectangle((0, band_top + 5 * unit, tile, band_top + 5 * unit + unit // 3), fill=GLAZE)
     font = ImageFont.truetype(FONT, round(tile * 0.62))
-    box = draw.textbbox((0, 0), "Π", font=font)
+    box = draw.textbbox((0, 0), "Ζ", font=font)
     x = (tile - (box[2] - box[0])) / 2 - box[0]
     y = (band_top - unit - (box[3] - box[1])) / 2 - box[1] + tile * 0.01
-    draw.text((x, y), "Π", font=font, fill=GLAZE)
+    draw.text((x, y), "Ζ", font=font, fill=GLAZE)
 
     mask = Image.new("L", (tile, tile), 0)
     ImageDraw.Draw(mask).rounded_rectangle((0, 0, tile - 1, tile - 1), RADIUS, fill=255)

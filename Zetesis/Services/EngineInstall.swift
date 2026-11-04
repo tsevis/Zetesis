@@ -46,7 +46,7 @@ enum EngineInstall {
     }
 
     static func environment(library: URL) -> [String: String] {
-        ["PATH": toolPath, "HOME": NSHomeDirectory(), "PINAKES_LIBRARY": library.path(percentEncoded: false),
+        ["PATH": toolPath, "HOME": NSHomeDirectory(), "ZETESIS_LIBRARY": library.path(percentEncoded: false),
          "PYTHONDONTWRITEBYTECODE": "1", "LANG": "el_GR.UTF-8"]
     }
 }

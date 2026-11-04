@@ -23,9 +23,9 @@ struct SettingsView: View {
                 }
             }
             Section("Ενημέρωση") {
-                Text("Όσο το Pinakes είναι ανοιχτό, κάθε νέο βιβλίο μπαίνει στο ευρετήριο μόλις τελειώσει η αντιγραφή του.")
+                Text("Όσο το Zetesis είναι ανοιχτό, κάθε νέο βιβλίο μπαίνει στο ευρετήριο μόλις τελειώσει η αντιγραφή του.")
                     .font(.callout).foregroundStyle(.secondary)
-                Toggle("Ενημέρωση και όταν το Pinakes είναι κλειστό", isOn: $backgroundUpdates)
+                Toggle("Ενημέρωση και όταν το Zetesis είναι κλειστό", isOn: $backgroundUpdates)
                     .onChange(of: backgroundUpdates) { _, on in setAgent(on) }
                     .disabled(model.library == nil)
                 if let agentError { Text(agentError).foregroundStyle(.red).font(.caption) }

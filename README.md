@@ -1,10 +1,10 @@
-# Pinakes
+# Zetesis
 
-<img src="documents/icon.png" width="128" align="right" alt="Pinakes' icon: a black-figure Greek capital Pi on terracotta, over a meander band.">
+<img src="documents/icon.png" width="128" align="right" alt="Zetesis' icon: a black-figure Greek capital Zeta on terracotta, over a meander band.">
 
 A native macOS app that searches inside every book of a large personal library: PDFs, EPUBs,
-text files and folders of Markdown with images. Named after the *Pinakes* of Callimachus, the
-catalogue of the Library of Alexandria.
+text files and folders of Markdown with images. Named after *zetesis* (ζήτησις), the ancient
+philosophers' word for inquiry: the search that goes on until it finds.
 
 **Version 0.1.0.** SwiftUI, macOS 15 or later. The interface is in Greek.
 
@@ -31,8 +31,8 @@ catalogue of the Library of Alexandria.
 
 - `Engine/` (Python 3.10+, standard library only). It scans the library, extracts text per page
   with `pdftotext` from poppler, classifies new books and keeps the SQLite FTS5 index up to date.
-  The app copies it into `~/Library/Application Support/Pinakes/Engine` and runs it there.
-- `Pinakes/` (Swift). It reads the index directly through the system SQLite.
+  The app copies it into `~/Library/Application Support/Zetesis/Engine` and runs it there.
+- `Zetesis/` (Swift). It reads the index directly through the system SQLite.
 - **Design for large libraries.**
   - A page's rowid encodes its book (`book << 17 | n`). Ranking books therefore only reads the FTS
     doclist and never looks a page up.
@@ -44,14 +44,14 @@ catalogue of the Library of Alexandria.
     being replaced.
 
 Working data stays in the library, in `_SEARCH/`: the inventory, `topics.json` and the text cache.
-The index is in `~/Library/Application Support/Pinakes/`.
+The index is in `~/Library/Application Support/Zetesis/`.
 
 ## Build
 
 ```bash
 brew install xcodegen poppler
 xcodegen generate
-xcodebuild -scheme Pinakes -configuration Release -derivedDataPath build/dd build
+xcodebuild -scheme Zetesis -configuration Release -derivedDataPath build/dd build
 ```
 
 `python3 Scripts/make-icon.py` redraws the icon.
@@ -59,7 +59,17 @@ xcodebuild -scheme Pinakes -configuration Release -derivedDataPath build/dd buil
 ## Tests
 
 ```bash
-xcodebuild test -scheme Pinakes -destination 'platform=macOS' -derivedDataPath build/dd -only-testing:PinakesTests
+xcodebuild test -scheme Zetesis -destination 'platform=macOS' -derivedDataPath build/dd -only-testing:ZetesisTests
 ```
 
 They are hostless and never open a window.
+
+## Release
+
+Signed with Developer ID, notarized and stapled by the shared script in `biblioteca`:
+
+```bash
+APPLE_TEAM_ID=<your Team ID> ../biblioteca/Scripts/sign-and-notarize.sh build/dd/Build/Products/Release/Zetesis.app
+```
+
+The signed app and a DMG are written to `build/dd/Build/Products/Release/signed/`.

@@ -45,7 +45,7 @@ struct ReaderView: View {
                 ContentUnavailableView("Ο δίσκος της βιβλιοθήκης δεν είναι συνδεδεμένος", systemImage: "externaldrive")
             }
         }
-        .navigationTitle(book?.title ?? "Pinakes")
+        .navigationTitle(book?.title ?? "Zetesis")
         .navigationSubtitle(hits.isEmpty ? "σελ. \(page)" : "\(hits.count) σελίδες με ευρήματα · σελ. \(page)")
         .onChange(of: current) { _, id in
             if let hit = hits.first(where: { $0.id == id }) { page = hit.page }

@@ -10,8 +10,8 @@ final class SearchEngine: Sendable {
     let databaseURL: URL
     private let ranker: SQLiteConnection
     private let reader: SQLiteConnection
-    private let rankQueue = DispatchQueue(label: "pinakes.rank", qos: .userInitiated)
-    private let readQueue = DispatchQueue(label: "pinakes.read", qos: .userInitiated)
+    private let rankQueue = DispatchQueue(label: "zetesis.rank", qos: .userInitiated)
+    private let readQueue = DispatchQueue(label: "zetesis.read", qos: .userInitiated)
 
     init(databaseURL: URL) throws {
         self.databaseURL = databaseURL
