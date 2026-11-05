@@ -5,11 +5,18 @@ caches made before that mark existed are assessed here once: the PDF's page coun
 the pages that came out with text. Recognised pages replace the empty ones in the text cache, which
 the next index sync picks up, so a book becomes searchable as soon as it is done. The work stops
 between books whenever should_stop() says so (the library changed): new books come first.
+
+Vision reads no Greek. When Tesseract with its Greek model is installed, the helper hands it the
+pages Vision is unsure of that Tesseract sees as Greek, and every page of a book with a Greek title.
+Without Tesseract, books with Greek titles wait rather than get Vision's guesses.
 """
 import json
 import logging
+import re
+import shutil
 import subprocess
 from collections.abc import Callable
+from functools import cache
 from pathlib import Path
 
 from config import INVENTORY, OCR_TOOL, ROOT
@@ -23,9 +30,15 @@ from extract import (
 )
 
 BOOK_TIMEOUT_S = 3 * 3600
+# Long books get more: the helper read a page in 0.4–1.7 s in the tests, so this is far above that.
+PAGE_TIMEOUT_S = 30
 # Checking for library changes walks the whole tree, so it is done only every so many books.
 STOP_CHECK_EVERY = 50
 INFO_TIMEOUT_S = 30
+GREEK = re.compile(r"[\u0370-\u03ff\u1f00-\u1fff]")
+LETTER = re.compile(r"[^\W\d_]")
+# Tesseract's models for Greek, for English (in Greek books) and for script detection.
+TESSERACT_MODELS = {"ell", "eng", "osd"}
 
 log = logging.getLogger("library-update")
 
@@ -36,6 +49,35 @@ def page_count(pdf: Path) -> int:
         if line.startswith("Pages:"):
             return int(line.split(":", 1)[1])
     return 0
+
+
+@cache
+def tesseract() -> str | None:
+    """Tesseract's path, if it is installed with the models the helper uses."""
+    path = shutil.which("tesseract")
+    if not path:
+        return None
+    langs = subprocess.run([path, "--list-langs"], capture_output=True, timeout=INFO_TIMEOUT_S, check=False)
+    return path if TESSERACT_MODELS <= set(langs.stdout.decode(errors="replace").split()) else None
+
+
+def greek_title(book: dict) -> bool:
+    """Most of the title's letters are Greek (a "λ-calculus" or "α-synuclein" is not a Greek book)."""
+    letters = LETTER.findall(book["title"])
+    return bool(letters) and len(GREEK.findall(book["title"])) * 2 > len(letters)
+
+
+def runnable(todo: list, tesseract: str | None) -> tuple[list, int]:
+    """([(book, files, helper arguments)], how many Greek books wait for Tesseract)."""
+    runs, waiting = [], 0
+    for book, files in todo:
+        greek = greek_title(book)
+        if greek and not tesseract:
+            waiting += 1
+            continue
+        args = ["--tesseract", tesseract] if tesseract else []
+        runs.append((book, files, args + ["--greek"] if greek else args))
+    return runs, waiting
 
 
 def cached_rows(book: dict) -> list:
@@ -53,10 +95,11 @@ def assess(book: dict) -> dict:
     return ocr_plan(pdfs, {str(p): (page_count(p), with_text) for p in pdfs})
 
 
-def recognise(pdf: Path) -> dict:
+def recognise(pdf: Path, args: list) -> dict:
     """{page: text} for the pages of pdf the helper read."""
-    out = subprocess.run([OCR_TOOL, str(pdf), "--min-chars", str(OCR_MIN_CHARS)], capture_output=True,
-                         timeout=BOOK_TIMEOUT_S, check=True)
+    timeout = max(BOOK_TIMEOUT_S, page_count(pdf) * PAGE_TIMEOUT_S)
+    out = subprocess.run([OCR_TOOL, str(pdf), "--min-chars", str(OCR_MIN_CHARS), *args], capture_output=True,
+                         timeout=timeout, check=True)
     pages = {}
     for line in out.stdout.decode("utf-8", errors="replace").splitlines():
         row = json.loads(line)
@@ -66,7 +109,8 @@ def recognise(pdf: Path) -> dict:
 
 def merged(rows: list, found: dict) -> list:
     """The cache rows with the recognised pages in place of the PDF's empty ones."""
-    found = {p: t for p, t in found.items() if len(t) >= MIN_PAGE_CHARS}
+    # Tesseract writes the micro sign for the Greek μ (NFKC would also flatten footnote marks into words).
+    found = {p: t.replace("\u00b5", "\u03bc") for p, t in found.items() if len(t) >= MIN_PAGE_CHARS}
     kept = [r for r in rows if not (r["src"] == "pdf" and r["page"] in found)]
     added = [{"src": "pdf", "page": p, "text": t, "images": []} for p, t in found.items()]
     return sorted(kept + added, key=lambda r: (r["page"], r["src"]))
@@ -102,16 +146,18 @@ def main(should_stop: Callable[[], bool], on_book: Callable[[], None]) -> int:
     """Recognise pending books until done or should_stop(); on_book() runs after each. Returns how many."""
     if not OCR_TOOL or not Path(OCR_TOOL).exists():
         return 0
-    todo = pending(json.loads(INVENTORY.read_text()), should_stop)
+    todo, waiting = runnable(pending(json.loads(INVENTORY.read_text()), should_stop), tesseract())
+    if waiting:
+        log.info("%d books with Greek titles wait for Tesseract (brew install tesseract tesseract-lang)", waiting)
     done = 0
-    for n, (book, files) in enumerate(todo):
+    for n, (book, files, args) in enumerate(todo):
         if should_stop():
             break
         print(f"@ocr {n} {len(todo)}", flush=True)
         try:
             found = {}
             for f in files:
-                found.update(recognise(ROOT / f))
+                found.update(recognise(ROOT / f, args))
             write_rows(book, merged(cached_rows(book), found))
             write_ocr_status(cache_path(book), {"state": "done"})
             log.info("text recognised: %s (%d pages)", book["key"], len(found))

@@ -97,6 +97,27 @@ def test_titles_shared_by_several_books_or_shaped_like_codes_are_not_titles():
     assert [b["title"] for b in metadata.with_metadata(inv, found)] == [b["title"] for b in inv]
 
 
+def test_recognised_greek_mu_is_the_greek_letter():
+    # Tesseract writes the micro sign for μ; left alone, no search for a word with μ would find it.
+    out = ocr.merged([], {1: "σκονισ\u00b5ένα βιβλία"})
+    assert out[0]["text"] == "σκονισμένα βιβλία"
+
+
+def test_greek_books_wait_for_tesseract_instead_of_getting_vision_junk():
+    greek = {"key": "g", "title": "Η τέχνη της τυπογραφίας", "author": ""}
+    latin = {"key": "l", "title": "The art of printing", "author": ""}
+    symbol = {"key": "s", "title": "The λ-calculus and α-synuclein", "author": "Ιωάννης Π."}
+    runs, waiting = ocr.runnable([(symbol, ["s.pdf"])], tesseract=None)
+    assert [b["key"] for b, _, _ in runs] == ["s"] and waiting == 0
+    todo = [(greek, ["g.pdf"]), (latin, ["l.pdf"])]
+    runs, waiting = ocr.runnable(todo, tesseract=None)
+    assert [(b["key"], args) for b, _, args in runs] == [("l", [])] and waiting == 1
+    runs, waiting = ocr.runnable(todo, tesseract="/bin/tesseract")
+    assert [(b["key"], args) for b, _, args in runs] == [
+        ("g", ["--tesseract", "/bin/tesseract", "--greek"]), ("l", ["--tesseract", "/bin/tesseract"])]
+    assert waiting == 0
+
+
 if __name__ == "__main__":
     failed = 0
     for name, test in [(n, f) for n, f in globals().items() if n.startswith("test_")]:

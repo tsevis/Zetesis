@@ -7,7 +7,7 @@ ones too), EPUB, DjVu, Word, RTF, OpenDocument, plain text and folders of Markdo
 folder of books works, Calibre libraries included, and nothing in it is moved or written to. Named after *zetesis* (ζήτησις), the ancient
 philosophers' word for inquiry: the search that goes on until it finds.
 
-**Version 0.2.0.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
+**Version 0.2.1.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
 French and Ukrainian, following the system's language.
 
 ## What it does
@@ -28,7 +28,10 @@ French and Ukrainian, following the system's language.
 - **Scanned books.** PDFs whose pages are mostly images are read with macOS's text recognition, in
   the background after the normal update, the ones with the least text first. A book becomes
   searchable as soon as it is done. Vision reads Latin and Cyrillic scripts, Chinese, Japanese,
-  Korean, Arabic and others, but not Greek.
+  Korean, Arabic and others, but not Greek. For Greek, monotonic and polytonic, install Tesseract
+  (`brew install tesseract tesseract-lang`): pages Vision is unsure of and that Tesseract sees as
+  Greek are read by Tesseract, and so is every page of a book with a Greek title. Without it, books
+  with Greek titles wait for it instead of getting garbled text.
 - **Export.** Every book that matches a search can be saved as one Markdown file, with its best
   passages and `file://` links to the exact PDF pages.
 - **Always current.** While the app is open, a book copied into the library is indexed once the copy
@@ -46,7 +49,8 @@ French and Ukrainian, following the system's language.
 - `Zetesis/` (Swift). It reads the index directly through the system SQLite. Its strings are in
   `Zetesis/Resources/Localizable.xcstrings`.
 - `OCRTool/` (Swift, PDFKit and Vision). `zetesis-ocr`, embedded in `Contents/MacOS`, recognises the
-  pages of a PDF that have no text of their own; the engine runs it one book at a time.
+  pages of a PDF that have no text of their own, handing Greek pages to Tesseract when it is
+  installed; the engine runs it one book at a time.
 - **Design for large libraries.**
   - A page's rowid encodes its book (`book << 17 | n`). Ranking books therefore only reads the FTS
     doclist and never looks a page up.
@@ -65,6 +69,7 @@ already keeps a `_SEARCH/` folder goes on using it.
 
 ```bash
 brew install xcodegen poppler djvulibre
+brew install tesseract tesseract-lang   # optional: OCR for Greek scans
 xcodegen generate
 xcodebuild -scheme Zetesis -configuration Release -derivedDataPath build/dd build
 ```
