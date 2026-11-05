@@ -72,15 +72,15 @@ struct PDFReader: NSViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
-    func makeNSView(context: Context) -> PDFView {
-        let view = PDFView()
+    func makeNSView(context: Context) -> ReaderPDFView {
+        let view = ReaderPDFView()
         view.autoScales = true
         view.displayMode = .singlePageContinuous
         view.displaysPageBreaks = true
         return view
     }
 
-    func updateNSView(_ view: PDFView, context: Context) {
+    func updateNSView(_ view: ReaderPDFView, context: Context) {
         let state = context.coordinator
         if state.url != url {
             view.document = PDFDocument(url: url)
@@ -94,8 +94,16 @@ struct PDFReader: NSViewRepresentable {
         view.highlightedSelections = selections
         view.go(to: pdfPage)
         if let first = selections.first {
-            view.go(to: first.bounds(for: pdfPage), on: pdfPage)
+            view.reveal(first.bounds(for: pdfPage), on: pdfPage)
         }
+    }
+
+    /// Scrolls so the match sits in the middle of the view. Going to the match's own rectangle puts it
+    /// at the top edge, under the window's title bar.
+    static func center(_ match: CGRect, on page: PDFPage, in view: PDFView) {
+        let visible = view.bounds.height / max(view.scaleFactor, 0.01)
+        let margin = max(0, (visible - match.height) / 2)
+        view.go(to: match.insetBy(dx: 0, dy: -margin), on: page)
     }
 
     /// Diacritic- and case-insensitive, like the search, so "μαιανδρος" finds "μαίανδρος".
@@ -150,5 +158,26 @@ struct TextPage: View {
             }
         }
         return result
+    }
+}
+
+/// A PDFView that puts a match in its middle once it has a size. A new reader window is laid out
+/// after updateNSView, and a jump made before that is lost: the view opens at the top of the page.
+final class ReaderPDFView: PDFView {
+    private var pending: (match: CGRect, page: PDFPage)?
+
+    func reveal(_ match: CGRect, on page: PDFPage) {
+        guard bounds.height > 0 else {
+            pending = (match, page)
+            return
+        }
+        Task { @MainActor in PDFReader.center(match, on: page, in: self) }
+    }
+
+    override func layout() {
+        super.layout()
+        guard let target = pending, bounds.height > 0 else { return }
+        pending = nil
+        Task { @MainActor in PDFReader.center(target.match, on: target.page, in: self) }
     }
 }

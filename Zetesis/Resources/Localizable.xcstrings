@@ -640,6 +640,40 @@
         }
       }
     },
+    "About Zetesis": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Über Zetesis"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σχετικά με το Zetesis"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À propos de Zetesis"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Informazioni su Zetesis"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Про Zetesis"
+          }
+        }
+      }
+    },
     "All Books": {
       "localizations": {
         "de": {
@@ -1116,6 +1150,40 @@
         }
       }
     },
+    "Continue": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weiter"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Συνέχεια"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuer"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continua"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продовжити"
+          }
+        }
+      }
+    },
     "Correct, Keep It": {
       "localizations": {
         "de": {
@@ -1146,6 +1214,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Правильно, залишити"
+          }
+        }
+      }
+    },
+    "Created by Charis Tsevis, with the help of Claude Code.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erstellt von Charis Tsevis, mit Hilfe von Claude Code."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δημιουργία: Χάρης Τσέβης, με τη βοήθεια του Claude Code."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Créé par Charis Tsevis, avec l'aide de Claude Code."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Creato da Charis Tsevis, con l'aiuto di Claude Code."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Створив Харіс Цевіс за допомогою Claude Code."
           }
         }
       }
@@ -2776,6 +2878,40 @@
         }
       }
     },
+    "Searches inside every book of a library.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Durchsucht jedes Buch einer Bibliothek."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ψάχνει μέσα σε κάθε βιβλίο μιας βιβλιοθήκης."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cherche à l'intérieur de chaque livre d'une bibliothèque."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerca dentro ogni libro di una biblioteca."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Шукає всередині кожної книжки бібліотеки."
+          }
+        }
+      }
+    },
     "Searching…": {
       "localizations": {
         "de": {
@@ -3558,6 +3694,40 @@
         }
       }
     },
+    "Type a word and Zetesis finds it on every page of every book in your library: PDF, EPUB, DjVu, Word, plain text and Markdown. Scanned books too, read with the Mac's own text recognition, and Greek ones with Tesseract. The reader opens at the page that matched, with the words highlighted.\n\nNothing leaves this Mac. Your books are never moved or changed; the index is kept apart from them and follows the library as it grows.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geben Sie ein Wort ein, und Zetesis findet es auf jeder Seite jedes Buches Ihrer Bibliothek: PDF, EPUB, DjVu, Word, reiner Text und Markdown. Auch in gescannten Büchern, gelesen mit der Texterkennung des Mac, und in griechischen mit Tesseract. Der Leser öffnet sich auf der gefundenen Seite, mit hervorgehobenen Wörtern.\n\nNichts verlässt diesen Mac. Ihre Bücher werden nie verschoben oder verändert; der Index wird getrennt aufbewahrt und wächst mit der Bibliothek."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Γράψτε μια λέξη και το Zetesis τη βρίσκει σε κάθε σελίδα κάθε βιβλίου της βιβλιοθήκης σας: PDF, EPUB, DjVu, Word, απλό κείμενο και Markdown. Και σε σαρωμένα βιβλία, που τα διαβάζει με την αναγνώριση κειμένου του Mac, και τα ελληνικά με το Tesseract. Ο αναγνώστης ανοίγει στη σελίδα που ταίριαξε, με τις λέξεις επισημασμένες.\n\nΤίποτα δεν φεύγει από αυτό το Mac. Τα βιβλία σας δεν μετακινούνται ούτε αλλάζουν ποτέ· το ευρετήριο κρατιέται χωριστά και ακολουθεί τη βιβλιοθήκη καθώς μεγαλώνει."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tapez un mot et Zetesis le trouve sur chaque page de chaque livre de votre bibliothèque : PDF, EPUB, DjVu, Word, texte brut et Markdown. Les livres numérisés aussi, lus avec la reconnaissance de texte du Mac, et les livres grecs avec Tesseract. Le lecteur s'ouvre à la page trouvée, les mots surlignés.\n\nRien ne quitte ce Mac. Vos livres ne sont jamais déplacés ni modifiés ; l'index est conservé à part et suit la bibliothèque à mesure qu'elle grandit."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scrivi una parola e Zetesis la trova in ogni pagina di ogni libro della tua biblioteca: PDF, EPUB, DjVu, Word, testo semplice e Markdown. Anche nei libri scansionati, letti con il riconoscimento del testo del Mac, e in quelli greci con Tesseract. Il lettore si apre alla pagina trovata, con le parole evidenziate.\n\nNulla lascia questo Mac. I tuoi libri non vengono mai spostati né modificati; l'indice è tenuto a parte e segue la biblioteca man mano che cresce."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Введіть слово, і Zetesis знайде його на кожній сторінці кожної книжки вашої бібліотеки: PDF, EPUB, DjVu, Word, простий текст і Markdown. Також у сканованих книжках, які він читає за допомогою розпізнавання тексту Mac, а грецькі — за допомогою Tesseract. Читач відкривається на знайденій сторінці з виділеними словами.\n\nНіщо не залишає цей Mac. Ваші книжки ніколи не переміщуються й не змінюються; індекс зберігається окремо і росте разом із бібліотекою."
+          }
+        }
+      }
+    },
     "Type a word in the search field to see on which pages of this book it appears.": {
       "localizations": {
         "de": {
@@ -3758,6 +3928,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Оновлення індексу…"
+          }
+        }
+      }
+    },
+    "Version %@ (%@)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %1$@ (%2$@)"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Έκδοση %1$@ (%2$@)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Version %1$@ (%2$@)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %1$@ (%2$@)"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versione %1$@ (%2$@)"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Версія %1$@ (%2$@)"
           }
         }
       }

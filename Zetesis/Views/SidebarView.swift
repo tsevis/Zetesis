@@ -18,7 +18,13 @@ struct SidebarView: View {
             }
         }
         .listStyle(.sidebar)
-        .safeAreaInset(edge: .bottom) { IndexStatus().padding(10) }
+        .safeAreaInset(edge: .bottom) {
+            VStack(alignment: .leading, spacing: 10) {
+                IndexStatus()
+                TsevisMark()
+            }
+            .padding(10)
+        }
     }
 
     private func row(_ title: String, systemImage: String, shelf: LibraryModel.Shelf) -> some View {

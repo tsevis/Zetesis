@@ -3,8 +3,11 @@
 Run from the repository root:  python3 EngineTests/test_engine.py  (or with pytest)
 """
 import os
+import signal
+import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 os.environ.setdefault("ZETESIS_LIBRARY", tempfile.mkdtemp())
@@ -116,6 +119,30 @@ def test_greek_books_wait_for_tesseract_instead_of_getting_vision_junk():
     assert [(b["key"], args) for b, _, args in runs] == [
         ("g", ["--tesseract", "/bin/tesseract", "--greek"]), ("l", ["--tesseract", "/bin/tesseract"])]
     assert waiting == 0
+
+
+def test_stopping_the_engine_also_stops_the_program_it_is_waiting_for():
+    # The app stops the engine with SIGTERM when it quits; the OCR helper must not run on, orphaned.
+    engine = Path(__file__).resolve().parent.parent / "Engine"
+    script = f"import sys; sys.path.insert(0, {str(engine)!r}); import update, subprocess; " \
+             "update.stop_on_sigterm(); subprocess.run(['sleep', '30'])"
+    parent = subprocess.Popen([sys.executable, "-c", script])
+    child = None
+    for _ in range(100):
+        found = subprocess.run(["pgrep", "-P", str(parent.pid), "sleep"], capture_output=True, text=True,
+                               check=False).stdout.split()
+        if found:
+            child = int(found[0])
+            break
+        time.sleep(0.05)
+    assert child, "the engine did not start its program"
+    parent.send_signal(signal.SIGTERM)
+    parent.wait(timeout=5)
+    time.sleep(0.2)
+    alive = subprocess.run(["kill", "-0", str(child)], capture_output=True, check=False).returncode == 0
+    if alive:
+        os.kill(child, signal.SIGKILL)
+    assert not alive, "the program outlived the engine"
 
 
 if __name__ == "__main__":

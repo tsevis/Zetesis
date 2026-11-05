@@ -3,14 +3,22 @@ import SwiftUI
 @main
 struct ZetesisApp: App {
     @State private var model = LibraryModel()
+    /// The splash screen, shown at every launch and again from About Zetesis.
+    @State private var isAboutPresented = true
 
     var body: some Scene {
         Window("Zetesis", id: "main") {
-            ContentView()
-                .environment(model)
-                .frame(minWidth: 960, minHeight: 600)
+            AboutPresentation(isPresented: isAboutPresented, dismiss: { isAboutPresented = false }) {
+                ContentView()
+            }
+            .environment(model)
+            .frame(minWidth: 960, minHeight: 600)
         }
         .commands {
+            // Replaces the standard About panel with the splash screen.
+            CommandGroup(replacing: .appInfo) {
+                Button("About Zetesis") { isAboutPresented = true }
+            }
             CommandGroup(after: .newItem) {
                 Button("Update Index") { model.updater.run(now: true) }
                     .keyboardShortcut("r")

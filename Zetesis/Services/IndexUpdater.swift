@@ -1,3 +1,4 @@
+import AppKit
 import CoreServices
 import Foundation
 import Observation
@@ -45,9 +46,17 @@ final class IndexUpdater {
     private var watcher: FolderWatcher?
     private var library: URL?
     private var tools: (engine: URL, python: URL)?
+    private var quitObserver: NSObjectProtocol?
 
     func start(library: URL) {
         self.library = library
+        // The engine is a separate process: without this it would go on recognising scans for hours
+        // after the app quit, even with background updates switched off.
+        quitObserver = quitObserver ?? NotificationCenter.default.addObserver(
+            forName: NSApplication.willTerminateNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.stop() }
+        }
         watcher = FolderWatcher(folder: library) { [weak self] in self?.folderChanged() }
         run(now: true)
     }
@@ -97,6 +106,11 @@ final class IndexUpdater {
             isRunning = false
             lastError = error.localizedDescription
         }
+    }
+
+    /// Asks the running engine to stop (SIGTERM); it ends the program it is waiting for and exits.
+    func stop() {
+        process?.terminate()
     }
 
     /// The engine is copied and Python located once per launch.

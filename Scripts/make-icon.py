@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Draws Zetesis' application icon: a black-figure Ζ on Attic clay, over a meander band.
+"""Draws Zetesis' application icon: a black-figure Ζ on Attic clay, over a meander band, and the
+splash screen's key art in the same manner: the word ΖΗΤΗΣΙΣ between two meander friezes.
 
-Writes every size of Zetesis/Resources/Assets.xcassets/AppIcon.appiconset and the accent colour.
+Writes every size of Zetesis/Resources/Assets.xcassets/AppIcon.appiconset, the accent colour and
+Zetesis/Resources/SplashArt.jpg.
 Run from the repository root:  python3 Scripts/make-icon.py
 """
 import json
@@ -19,15 +21,17 @@ CLAY_TOP = (214, 120, 62)
 CLAY_BOTTOM = (166, 72, 32)
 GLAZE = (28, 20, 16)
 FONT = "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf"  # has Greek glyphs; Didot has none
+SPLASH = ROOT / "Zetesis" / "Resources" / "SplashArt.jpg"
+SPLASH_SIZE = (1280, 440)  # the splash screen's 640 × 220 point banner, at 2×
 SIZES = [(16, 1), (16, 2), (32, 1), (32, 2), (128, 1), (128, 2), (256, 1), (256, 2), (512, 1), (512, 2)]
 
 
-def clay(size: int) -> Image.Image:
+def clay(size: int, width: int | None = None) -> Image.Image:
     column = Image.new("RGB", (1, size))
     for y in range(size):
         t = y / (size - 1)
         column.putpixel((0, y), tuple(round(a + (b - a) * t) for a, b in zip(CLAY_TOP, CLAY_BOTTOM)))
-    return column.resize((size, size))
+    return column.resize((width or size, size))
 
 
 def meander(draw: ImageDraw.ImageDraw, left: int, top: int, width: int, unit: int) -> None:
@@ -69,7 +73,32 @@ def icon() -> Image.Image:
     return canvas
 
 
+def frieze(draw: ImageDraw.ImageDraw, top: int, width: int, unit: int) -> None:
+    """A meander between two thin rules, across the whole width."""
+    rule = max(2, unit // 3)
+    draw.rectangle((0, top, width, top + rule), fill=GLAZE)
+    spirals = width // (4 * unit) + 1
+    meander(draw, (width - spirals * 4 * unit) // 2, top + unit + rule, spirals * 4 * unit, unit)
+    draw.rectangle((0, top + 6 * unit + rule, width, top + 6 * unit + 2 * rule), fill=GLAZE)
+
+
+def splash() -> Image.Image:
+    """The banner behind the splash screen's title: the app's name painted like a vase inscription.
+    The bottom third is left plain, since the title, tagline and version are set over it."""
+    width, height = SPLASH_SIZE
+    art = clay(height, width)
+    draw = ImageDraw.Draw(art)
+    unit = 14
+    frieze(draw, 22, width, unit)
+    font = ImageFont.truetype(FONT, 150)
+    word = "ΖΗΤΗΣΙΣ"
+    box = draw.textbbox((0, 0), word, font=font)
+    draw.text((width - (box[2] - box[0]) - 70 - box[0], 150 - box[1]), word, font=font, fill=GLAZE)
+    return art
+
+
 def main() -> None:
+    splash().save(SPLASH, quality=90)
     ICONSET.mkdir(parents=True, exist_ok=True)
     master = icon()
     images = []

@@ -12,6 +12,7 @@ import fcntl
 import json
 import logging
 import os
+import signal
 import sys
 import time
 
@@ -130,7 +131,14 @@ def recognise_scans(since: float) -> bool:
     return changed()
 
 
+def stop_on_sigterm() -> None:
+    """Make SIGTERM (the app quitting, launchd unloading the agent) an ordinary exit: subprocess.run
+    then kills the program it is waiting for (the OCR helper), and the lock is released."""
+    signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(128 + signum))
+
+
 def main() -> int:
+    stop_on_sigterm()
     APP_SUPPORT.mkdir(parents=True, exist_ok=True)
     DATA.mkdir(parents=True, exist_ok=True)
     full = "--full" in sys.argv
