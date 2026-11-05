@@ -12,13 +12,13 @@ struct ZetesisApp: App {
         }
         .commands {
             CommandGroup(after: .newItem) {
-                Button("Ενημέρωση ευρετηρίου") { model.updater.run(now: true) }
+                Button("Update Index") { model.updater.run(now: true) }
                     .keyboardShortcut("r")
                     .disabled(model.library == nil)
             }
         }
 
-        WindowGroup("Ανάγνωση", id: ReaderTarget.windowID, for: ReaderTarget.self) { $target in
+        WindowGroup("Reader", id: ReaderTarget.windowID, for: ReaderTarget.self) { $target in
             if let target {
                 ReaderView(target: target)
                     .environment(model)

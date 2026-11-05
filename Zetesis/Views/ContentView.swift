@@ -23,17 +23,17 @@ struct ContentView: View {
                     if let book = model.selectedBook {
                         BookDetailView(book: book)
                     } else {
-                        ContentUnavailableView("Διάλεξε ένα βιβλίο", systemImage: "book.closed",
-                                               description: Text("Οι σελίδες με ευρήματα εμφανίζονται εδώ."))
+                        ContentUnavailableView("Choose a Book", systemImage: "book.closed",
+                                               description: Text("Pages with matches appear here."))
                     }
                 }
                 .searchable(text: $model.searchText, placement: .toolbar,
-                            prompt: "Αναζήτηση σε όλη τη βιβλιοθήκη")
+                            prompt: "Search the whole library")
                 .toolbar { toolbar }
             }
         }
-        .alert("Η εξαγωγή απέτυχε", isPresented: .constant(exportError != nil)) {
-            Button("Εντάξει") { exportError = nil }
+        .alert("The Export Failed", isPresented: .constant(exportError != nil)) {
+            Button("OK") { exportError = nil }
         } message: {
             Text(exportError ?? "")
         }
@@ -43,11 +43,11 @@ struct ContentView: View {
     private var toolbar: some ToolbarContent {
         @Bindable var model = model
         ToolbarItemGroup(placement: .primaryAction) {
-            Picker("Ταξινόμηση", selection: $model.sortOrder) {
+            Picker("Sort", selection: $model.sortOrder) {
                 ForEach(LibraryModel.SortOrder.allCases) { Text($0.label).tag($0) }
             }
             .pickerStyle(.menu)
-            .help("Σειρά των βιβλίων")
+            .help("Order of the books")
 
             Button {
                 export()
@@ -55,19 +55,19 @@ struct ContentView: View {
                 if isExporting {
                     ProgressView().controlSize(.small)
                 } else {
-                    Label("Export σε Markdown", systemImage: "square.and.arrow.up")
+                    Label("Export as Markdown", systemImage: "square.and.arrow.up")
                 }
             }
-            .help("Όλα τα βιβλία της αναζήτησης σε ένα αρχείο .md")
+            .help("Every book of the search in one .md file")
             .disabled(!model.isQuerying || isExporting)
             .keyboardShortcut("e")
 
             Button {
                 model.updater.run(now: true)
             } label: {
-                Label("Ενημέρωση", systemImage: "arrow.clockwise")
+                Label("Update", systemImage: "arrow.clockwise")
             }
-            .help("Έλεγχος για νέα βιβλία τώρα")
+            .help("Check for new books now")
             .disabled(model.updater.isRunning)
         }
     }
@@ -100,10 +100,9 @@ struct Onboarding: View {
         ContentUnavailableView {
             Label("Zetesis", systemImage: "books.vertical")
         } description: {
-            Text("Διάλεξε τον φάκελο με τα βιβλία σου (PDF, EPUB, φακέλους md). "
-                 + "Τίποτα δεν μετακινείται: το Zetesis διαβάζει, ταξινομεί και ψάχνει μέσα σε όλα.")
+            Text("Choose the folder that holds your books: PDF, EPUB, DjVu, Word, text, Markdown folders. Nothing is moved or written there: Zetesis reads, sorts and searches inside them all.")
         } actions: {
-            Button("Επιλογή φακέλου…") { FolderPicker.chooseLibrary(for: model) }
+            Button("Choose Folder…") { FolderPicker.chooseLibrary(for: model) }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -115,8 +114,8 @@ enum FolderPicker {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
-        panel.prompt = "Επιλογή"
-        panel.message = "Ο φάκελος της βιβλιοθήκης"
+        panel.prompt = String(localized: "Choose")
+        panel.message = String(localized: "The library folder")
         if panel.runModal() == .OK, let url = panel.url { model.open(url) }
     }
 }

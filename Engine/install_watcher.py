@@ -26,7 +26,12 @@ def launchctl(*args: str) -> subprocess.CompletedProcess:
 def remove() -> None:
     launchctl("bootout", f"gui/{os.getuid()}/{LABEL}")
     PLIST.unlink(missing_ok=True)
-    print("Η αυτόματη ενημέρωση απενεργοποιήθηκε.")
+    print("Background updates switched off.")
+
+
+def passed_on() -> dict:
+    """The app's choices (topic folders, the OCR helper) as the app set them for this run."""
+    return {k: os.environ[k] for k in ("ZETESIS_TOPIC_FOLDERS", "ZETESIS_OCR") if os.environ.get(k)}
 
 
 def install() -> int:
@@ -37,7 +42,7 @@ def install() -> int:
         "WatchPaths": [str(ROOT)],
         "StartInterval": HOURLY_S,
         "ThrottleInterval": THROTTLE_S,
-        "EnvironmentVariables": {"PATH": TOOL_PATH, "ZETESIS_LIBRARY": str(ROOT)},
+        "EnvironmentVariables": {"PATH": TOOL_PATH, "ZETESIS_LIBRARY": str(ROOT), **passed_on()},
         "StandardOutPath": str(LOG),
         "StandardErrorPath": str(LOG),
         "Nice": 10,
@@ -49,9 +54,9 @@ def install() -> int:
     PLIST.write_bytes(plistlib.dumps(agent))
     r = launchctl("bootstrap", f"gui/{os.getuid()}", str(PLIST))
     if r.returncode != 0:
-        print(f"Αποτυχία ενεργοποίησης: {r.stderr.strip()}", file=sys.stderr)
+        print(f"Could not switch on background updates: {r.stderr.strip()}", file=sys.stderr)
         return 1
-    print(f"Η αυτόματη ενημέρωση ενεργοποιήθηκε. Ημερολόγιο: {LOG}")
+    print(f"Background updates switched on. Log: {LOG}")
     return 0
 
 

@@ -20,9 +20,9 @@ struct TopicChip: View {
 
     var body: some View {
         HStack(spacing: 3) {
-            Text(book.topic)
+            Text(Topic.displayName(book.topic))
             if book.autoTopic {
-                Image(systemName: "sparkles").help("Το θέμα δόθηκε αυτόματα")
+                Image(systemName: "sparkles").help("The topic was given automatically")
             }
         }
         .font(.caption)

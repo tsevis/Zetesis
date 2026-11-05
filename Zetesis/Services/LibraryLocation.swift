@@ -6,10 +6,24 @@ enum LibraryLocation {
         .appending(path: "Library/Application Support/Zetesis", directoryHint: .isDirectory)
     static let log = FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Logs/Zetesis.log")
     private static let libraryKey = "libraryPath"
+    private static let topicFoldersKey = "topicFolders"
+    /// Folder names the engine uses for topic symlinks inside a library (Engine/config.py).
+    static let topicFolderNames = ["_ΘΕΜΑΤΑ", "_Topics"]
 
     static var library: URL? {
         get { UserDefaults.standard.string(forKey: libraryKey).map { URL(filePath: $0, directoryHint: .isDirectory) } }
         set { UserDefaults.standard.set(newValue?.path(percentEncoded: false), forKey: libraryKey) }
+    }
+
+    /// Whether the engine keeps a folder of topic symlinks inside the library. Until the user says,
+    /// it does so only where such a folder is already there.
+    static func keepsTopicFolders(in library: URL) -> Bool {
+        if let chosen = UserDefaults.standard.object(forKey: topicFoldersKey) as? Bool { return chosen }
+        return topicFolderNames.contains { FileManager.default.fileExists(atPath: library.appending(path: $0).path) }
+    }
+
+    static func setKeepsTopicFolders(_ on: Bool) {
+        UserDefaults.standard.set(on, forKey: topicFoldersKey)
     }
 
     /// The index in use for `library`, found through the pointer file the engine writes next to it

@@ -22,14 +22,14 @@ struct ReaderView: View {
         NavigationSplitView {
             List(hits, selection: $current) { hit in
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("σελ. \(hit.page)").font(.callout.bold())
+                    Text("p. \(hit.page)").font(.callout.bold())
                     Text(hit.snippet.attributed).font(.caption).lineLimit(4)
                 }
                 .tag(hit.id)
             }
             .navigationSplitViewColumnWidth(min: 200, ideal: 260)
             .overlay {
-                if hits.isEmpty { Text("Χωρίς αναζήτηση").foregroundStyle(.secondary) }
+                if hits.isEmpty { Text("No search").foregroundStyle(.secondary) }
             }
         } detail: {
             if let book, let library = model.library {
@@ -39,14 +39,15 @@ struct ReaderView: View {
                 } else if let rowid = current ?? hits.first?.id {
                     TextPage(rowid: rowid, terms: target.terms)
                 } else {
-                    ContentUnavailableView("Δεν υπάρχει αρχείο για ανάγνωση", systemImage: "doc.questionmark")
+                    ContentUnavailableView("No file to read", systemImage: "doc.questionmark")
                 }
             } else {
-                ContentUnavailableView("Ο δίσκος της βιβλιοθήκης δεν είναι συνδεδεμένος", systemImage: "externaldrive")
+                ContentUnavailableView("The library’s disk is not connected", systemImage: "externaldrive")
             }
         }
         .navigationTitle(book?.title ?? "Zetesis")
-        .navigationSubtitle(hits.isEmpty ? "σελ. \(page)" : "\(hits.count) σελίδες με ευρήματα · σελ. \(page)")
+        .navigationSubtitle(hits.isEmpty ? String(localized: "p. \(page)")
+                            : String(localized: "Pages with matches: \(hits.count) · p. \(page)"))
         .onChange(of: current) { _, id in
             if let hit = hits.first(where: { $0.id == id }) { page = hit.page }
         }

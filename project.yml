@@ -4,6 +4,7 @@ options:
   deploymentTarget:
     macOS: "15.0"
   createIntermediateGroups: true
+  developmentLanguage: en
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -21,6 +22,12 @@ targets:
         type: folder
         buildPhase: resources
         excludes: ["__pycache__", "**/__pycache__"]
+    dependencies:
+      # Text recognition for scanned books, run by the engine; lands in Contents/MacOS.
+      - target: zetesis-ocr
+        embed: true
+        copy:
+          destination: executables
     settings:
       base:
         PRODUCT_NAME: Zetesis
@@ -30,12 +37,23 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Zetesis
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.reference
         INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Charis Tsevis"
-        INFOPLIST_KEY_NSRemovableVolumesUsageDescription: "Το Zetesis διαβάζει τα βιβλία της βιβλιοθήκης σου από τον εξωτερικό δίσκο."
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
-        DEVELOPMENT_LANGUAGE: el
+        INFOPLIST_KEY_NSRemovableVolumesUsageDescription: "Zetesis reads the books of your library from the external disk."
+        MARKETING_VERSION: "0.2.0"
+        CURRENT_PROJECT_VERSION: "2"
+        DEVELOPMENT_LANGUAGE: en
+        LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
         ENABLE_HARDENED_RUNTIME: YES
         ENABLE_APP_SANDBOX: NO
+  zetesis-ocr:
+    type: tool
+    platform: macOS
+    sources: [OCRTool]
+    settings:
+      base:
+        PRODUCT_NAME: zetesis-ocr
+        ENABLE_HARDENED_RUNTIME: YES
+        SKIP_INSTALL: YES
   ZetesisTests:
     type: bundle.unit-test
     platform: macOS

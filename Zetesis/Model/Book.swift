@@ -51,6 +51,13 @@ struct PageHit: Identifiable, Hashable, Sendable {
     var isPDFPage: Bool { source == "pdf" || source == "md" }
 }
 
+/// Topic names come from the library; the engine's empty name means "not sorted yet".
+enum Topic {
+    static func displayName(_ name: String) -> String {
+        name.isEmpty ? String(localized: "Unsorted") : name
+    }
+}
+
 struct SearchOutcome: Sendable {
     let text: String
     let query: String

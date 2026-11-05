@@ -1,4 +1,4 @@
-"""Keep <library>/_ΘΕΜΑΤΑ/<topic>/ filled with symlinks to each book's files and md folder. Nothing is moved.
+"""Keep <library>/_Topics/<topic>/ (or an existing _ΘΕΜΑΤΑ) filled with symlinks to each book's files and md folder. Nothing is moved.
 
 Incremental: only links that should not be there are removed and only missing ones are made, so an
 update touches the links of the books that changed, not every link. The folder must only ever
@@ -10,9 +10,10 @@ import sys
 import unicodedata
 from pathlib import Path
 
-from config import INVENTORY, ROOT, TOPICS, TOPICS_DIRNAME
+from config import INVENTORY, ROOT, TOPIC_FOLDER, TOPICS, UNSORTED
 
-OUT = ROOT / TOPICS_DIRNAME
+OUT = TOPIC_FOLDER
+UNSORTED_FOLDER = "Unsorted"
 
 
 def safe_name(s: str) -> str:
@@ -23,7 +24,7 @@ def wanted_links(inv: list, topics: dict) -> dict:
     """{link path: relative target} for every book."""
     links = {}
     for book in inv:
-        topic_dir = OUT / safe_name(topics.get(book["key"], {}).get("topic", "Άλλα"))
+        topic_dir = OUT / safe_name(topics.get(book["key"], {}).get("topic", UNSORTED) or UNSORTED_FOLDER)
         for rel in book["files"] + ([book["folder"]] if book["folder"] else []):
             link = topic_dir / safe_name(Path(rel).name)
             links.setdefault(link, os.path.relpath(ROOT / rel, topic_dir))
@@ -55,7 +56,7 @@ def main() -> int:
     topics = json.loads(TOPICS.read_text()) if TOPICS.exists() else {}
     have = existing_links() if OUT.exists() else {}
     if have is None:
-        print(f"{OUT} περιέχει πραγματικά αρχεία — δεν το αγγίζω.", file=sys.stderr)
+        print(f"{OUT} holds real files, not only links: left alone.", file=sys.stderr)
         return 1
     want = wanted_links(inv, topics)
     wanted_by_name = {nfc(p): t for p, t in want.items()}
@@ -75,7 +76,7 @@ def main() -> int:
         if folder.is_dir() and not folder.is_symlink() and not any(folder.iterdir()):
             folder.rmdir()
     if stale or len(want) != len(have):
-        print(f"θέματα: {len(stale)} σύνδεσμοι έφυγαν, {len(want) - len(have) + len(stale)} νέοι", file=sys.stderr)
+        print(f"topic folders: {len(stale)} links removed, {len(want) - len(have) + len(stale)} added", file=sys.stderr)
     return 0
 
 

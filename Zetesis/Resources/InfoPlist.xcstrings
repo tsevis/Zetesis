@@ -1,0 +1,41 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSRemovableVolumesUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zetesis liest die Bücher deiner Bibliothek vom externen Laufwerk."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το Zetesis διαβάζει τα βιβλία της βιβλιοθήκης σου από τον εξωτερικό δίσκο."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zetesis lit les livres de votre bibliothèque sur le disque externe."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zetesis legge i libri della tua biblioteca dal disco esterno."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zetesis читає книги вашої бібліотеки із зовнішнього диска."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

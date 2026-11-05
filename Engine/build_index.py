@@ -26,13 +26,16 @@ from pathlib import Path
 from config import (
     APP_SUPPORT,
     INVENTORY,
+    METADATA,
     ROOT,
     TOPICS,
+    UNSORTED,
     current_db,
     new_db_path,
     point_to,
 )
 from extract import cache_path
+from metadata import with_metadata
 from textfold import fold
 
 SCHEMA_VERSION = 3  # 3: text folded before indexing (textfold.py)
@@ -132,7 +135,7 @@ def text_stamp(book: dict) -> str:
 
 
 def book_meta(book: dict, topic: dict) -> tuple:
-    return (book["title"], book["author"], topic.get("topic", "Άλλα"), ", ".join(topic.get("tags", [])),
+    return (book["title"], book["author"], topic.get("topic", UNSORTED), ", ".join(topic.get("tags", [])),
             int(topic.get("auto", not topic)), json.dumps(book["files"], ensure_ascii=False),
             json.dumps(book["md"], ensure_ascii=False), book["folder"],
             json.dumps(book.get("extra_folders", []), ensure_ascii=False), book["images"])
@@ -155,7 +158,7 @@ def load_pages(book: dict) -> list:
         return []
     rows = dedupe([json.loads(line) for line in cache.read_text(encoding="utf-8").splitlines() if line])
     if len(rows) > MAX_PAGES:
-        print(f"{book['key']}: {len(rows)} σελίδες, κρατώ τις πρώτες {MAX_PAGES}", file=sys.stderr)
+        print(f"{book['key']}: {len(rows)} pages, keeping the first {MAX_PAGES}", file=sys.stderr)
     return rows[:MAX_PAGES]
 
 
@@ -271,20 +274,21 @@ def build_fresh(inv: list, topics: dict, previous: Path | None) -> int:
 
 
 def main(full: bool = False) -> int:
-    inv = json.loads(INVENTORY.read_text())
+    found = json.loads(METADATA.read_text()) if METADATA.exists() else {}
+    inv = with_metadata(json.loads(INVENTORY.read_text()), found)
     topics = json.loads(TOPICS.read_text()) if TOPICS.exists() else {}
     APP_SUPPORT.mkdir(parents=True, exist_ok=True)
     started = time.time()
     db = current_db()
     if full or current_version(db) != SCHEMA_VERSION:
         changed = build_fresh(inv, topics, db)
-        how = "από την αρχή"
+        how = "rebuilt"
     else:
         con = connect(db)
         changed = sync(con, inv, topics)
         con.close()
-        how = "σταδιακά"
-    print(f"ευρετήριο {how}: {changed} βιβλία γράφτηκαν σε {time.time() - started:.1f}s", file=sys.stderr)
+        how = "updated"
+    print(f"index {how}: {changed} books written in {time.time() - started:.1f}s", file=sys.stderr)
     return changed
 
 

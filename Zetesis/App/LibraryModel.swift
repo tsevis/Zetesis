@@ -15,10 +15,10 @@ final class LibraryModel {
 
         var label: String {
             switch self {
-            case .relevance: "Σχετικότητα"
-            case .hits: "Ευρήματα"
-            case .title: "Τίτλος"
-            case .added: "Προσθήκη"
+            case .relevance: String(localized: "Relevance")
+            case .hits: String(localized: "Matches")
+            case .title: String(localized: "Title")
+            case .added: String(localized: "Date added")
             }
         }
     }
@@ -68,6 +68,8 @@ final class LibraryModel {
         LibraryLocation.library = folder
         Task { await reopen(force: true) }
         updater.start(library: folder)
+        // The LaunchAgent keeps the paths of the app it was installed from; refresh them in case it moved.
+        if BackgroundAgent.isInstalled { Task { try? await BackgroundAgent.set(true, library: folder) } }
     }
 
     // MARK: - Lists
@@ -115,10 +117,10 @@ final class LibraryModel {
 
     var shelfTitle: String {
         switch shelf {
-        case .all: "Όλα τα βιβλία"
-        case .recent: "Πρόσφατα"
-        case .unchecked: "Αυτόματη ταξινόμηση"
-        case .topic(let name): name
+        case .all: String(localized: "All Books")
+        case .recent: String(localized: "Recent")
+        case .unchecked: String(localized: "Sorted Automatically")
+        case .topic(let name): Topic.displayName(name)
         }
     }
 
@@ -217,7 +219,7 @@ final class LibraryModel {
     }
 
     func exportMarkdown() async throws -> String {
-        guard let engine, let library else { throw SQLiteError(message: "Δεν υπάρχει ευρετήριο.") }
+        guard let engine, let library else { throw SQLiteError(message: String(localized: "There is no index yet.")) }
         let scope = shelf == .all ? nil : shelfTitle
         return try await MarkdownExport.build(outcome: outcome, hits: visibleHits, titleMatches: visibleTitleMatches,
                                               scope: scope, library: library, engine: engine)

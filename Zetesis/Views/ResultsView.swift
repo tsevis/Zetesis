@@ -27,11 +27,11 @@ struct ResultsView: View {
         let titles = model.visibleTitleMatches
         return List(selection: $model.selectedBookID) {
             if !titles.isEmpty {
-                Section("Στον τίτλο, τον συγγραφέα ή το θέμα · \(titles.count)") {
+                Section("In the title, author or topic · \(titles.count)") {
                     ForEach(titles.prefix(12)) { BookRow(book: $0).tag($0.id) }
                 }
             }
-            Section("Μέσα στα κείμενα · \(hits.count) βιβλία") {
+            Section("Inside the texts · \(hits.count) books") {
                 ForEach(hits) { hit in
                     HitRow(hit: hit, query: model.outcome.query).tag(hit.book.id)
                 }
@@ -45,14 +45,14 @@ struct ResultsView: View {
     }
 
     private var subtitle: String {
-        if model.isSearching { return "Αναζήτηση…" }
+        if model.isSearching { return String(localized: "Searching…") }
         if model.isQuerying {
             let hits = model.visibleHits
             let pages = hits.reduce(0) { $0 + $1.pages }
             let ms = Int((model.outcome.elapsed * 1000).rounded())
-            return "\(pages.formatted()) σελίδες σε \(hits.count.formatted()) βιβλία · \(ms) ms"
+            return String(localized: "Pages: \(pages.formatted()) · books: \(hits.count.formatted()) · \(ms) ms")
         }
-        return "\(model.shelfBooks.count.formatted()) βιβλία"
+        return String(localized: "\(model.shelfBooks.count) books")
     }
 }
 
@@ -66,7 +66,7 @@ struct BookRow: View {
                 if !book.author.isEmpty { Text(book.author).foregroundStyle(.secondary).lineLimit(1) }
                 TopicChip(book: book)
                 Spacer(minLength: 0)
-                Text("\(book.pages) σελ.").font(.caption).foregroundStyle(.tertiary)
+                Text("\(book.pages) pp.").font(.caption).foregroundStyle(.tertiary)
             }
         }
         .padding(.vertical, 3)
@@ -89,7 +89,7 @@ struct HitRow: View {
                     .font(.caption.monospacedDigit().bold())
                     .padding(.horizontal, 6)
                     .background(Capsule().fill(.quaternary))
-                    .help("Σελίδες με ευρήματα")
+                    .help("Pages with matches")
             }
             HStack(spacing: 6) {
                 if !hit.book.author.isEmpty {
@@ -98,7 +98,7 @@ struct HitRow: View {
                 TopicChip(book: hit.book)
             }
             ForEach(pages) { page in
-                (Text("σελ. \(page.page)  ").foregroundStyle(.secondary) + Text(page.snippet.attributed))
+                (Text("p. \(page.page)").foregroundStyle(.secondary) + Text("  ") + Text(page.snippet.attributed))
                     .font(.callout)
                     .lineLimit(3)
             }
@@ -116,24 +116,24 @@ struct FirstIndexing: View {
 
     var body: some View {
         ContentUnavailableView {
-            Label("Πρώτη ευρετηρίαση", systemImage: "text.magnifyingglass")
+            Label("First Indexing", systemImage: "text.magnifyingglass")
         } description: {
             if model.updater.isRunning {
                 VStack(spacing: 8) {
                     ProgressView()
                     Text(model.updater.phase.label)
                     if model.updater.booksExtracted > 0 {
-                        Text("\(model.updater.booksExtracted) βιβλία διαβάστηκαν")
+                        Text("\(model.updater.booksExtracted) books read")
                     }
-                    Text("Μια μεγάλη βιβλιοθήκη θέλει χρόνο την πρώτη φορά· μετά ενημερώνονται μόνο τα νέα βιβλία.")
+                    Text("A large library takes a while the first time; after that only new books are read.")
                         .font(.callout)
                 }
             } else {
-                Text(model.updater.lastError ?? "Δεν υπάρχει ακόμα ευρετήριο για αυτόν τον φάκελο.")
+                Text(model.updater.lastError ?? String(localized: "There is no index for this folder yet."))
             }
         } actions: {
             if !model.updater.isRunning {
-                Button("Ευρετηρίαση τώρα") { model.updater.run(now: true) }
+                Button("Index Now") { model.updater.run(now: true) }
             }
         }
     }

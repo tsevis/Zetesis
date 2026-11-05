@@ -6,17 +6,18 @@ import Observation
 @MainActor @Observable
 final class IndexUpdater {
     enum Phase: String {
-        case idle, waiting, inventory, text, classify, index, topics
+        case idle, waiting, inventory, text, classify, index, topics, ocr
 
         var label: String {
             switch self {
             case .idle: ""
-            case .waiting: "Περιμένω να τελειώσει η αντιγραφή…"
-            case .inventory: "Καταγραφή βιβλίων…"
-            case .text: "Εξαγωγή κειμένου…"
-            case .classify: "Ταξινόμηση νέων βιβλίων…"
-            case .index: "Ενημέρωση ευρετηρίου…"
-            case .topics: "Θεματικοί φάκελοι…"
+            case .waiting: String(localized: "Waiting for the copy to finish…")
+            case .inventory: String(localized: "Listing books…")
+            case .text: String(localized: "Reading text…")
+            case .classify: String(localized: "Sorting new books…")
+            case .index: String(localized: "Updating the index…")
+            case .topics: String(localized: "Topic folders…")
+            case .ocr: String(localized: "Recognising scanned pages…")
             }
         }
     }
@@ -24,13 +25,16 @@ final class IndexUpdater {
     private(set) var phase: Phase = .idle
     private(set) var isRunning = false
     private(set) var booksExtracted = 0
+    /// Scanned books recognised so far in this run, and how many were waiting.
+    private(set) var recognition: (done: Int, total: Int)?
     private(set) var lastError: String?
     /// Called on the main actor after every run, whatever it printed: the index may have changed even
     /// when a run failed half-way, and reloading the book list is cheap.
     var onFinish: (() -> Void)?
 
     /// How long to wait before trying again when another update (the LaunchAgent's) holds the lock.
-    static let busyRetry: Duration = .seconds(30)
+    /// That one may be recognising scanned books for hours, and it indexes new books itself.
+    static let busyRetry: Duration = .seconds(300)
 
     private var process: Process?
     private var rerunWanted = false
@@ -55,6 +59,7 @@ final class IndexUpdater {
         // Set before anything that can spin the run loop, so a folder event cannot start a second run.
         isRunning = true
         booksExtracted = 0
+        recognition = nil
         lastError = nil
         wasBusy = false
         do {
@@ -104,10 +109,17 @@ final class IndexUpdater {
         for line in text.split(separator: "\n") {
             if line.hasPrefix("@phase "), let p = Phase(rawValue: String(line.dropFirst(7))) {
                 phase = p
+                if p != .ocr { recognition = nil }
             } else if line == "@busy" {
                 wasBusy = true
-            } else if line.hasPrefix("κείμενο:") {
+            } else if line.hasPrefix("text: ") {
                 booksExtracted += 1
+            } else if line.hasPrefix("@ocr ") {
+                let numbers = line.split(separator: " ").dropFirst().compactMap { Int($0) }
+                if numbers.count == 2 { recognition = (numbers[0], numbers[1]) }
+            } else if line == "@indexed" || line.hasPrefix("@done ") {
+                // The index changed while the run goes on (text recognition can take hours).
+                onFinish?()
             }
         }
     }
@@ -117,7 +129,7 @@ final class IndexUpdater {
         phase = .idle
         process = nil
         if status != 0 {
-            lastError = "Η ενημέρωση απέτυχε (κωδικός \(status)). Λεπτομέρειες: \(LibraryLocation.log.path)"
+            lastError = String(localized: "The update failed (code \(status)). Details: \(LibraryLocation.log.path)")
         }
         onFinish?()
         if rerunWanted {
@@ -141,7 +153,7 @@ final class IndexUpdater {
 final class FolderWatcher: @unchecked Sendable {
     private var stream: FSEventStreamRef?
     private let onChange: @MainActor () -> Void
-    private static let ignored = ["/_SEARCH/", "/_ΘΕΜΑΤΑ/", "/.DS_Store"]
+    private static let ignored = ["/_SEARCH/", "/_ΘΕΜΑΤΑ/", "/_Topics/", "/.DS_Store"]
     private static let latency: CFTimeInterval = 5
 
     init(folder: URL, onChange: @escaping @MainActor () -> Void) {

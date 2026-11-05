@@ -14,7 +14,7 @@ enum EngineInstall {
     /// Copies the bundled engine over the installed one and returns its folder.
     static func prepare() throws -> URL {
         guard let bundled = Bundle.main.url(forResource: "Engine", withExtension: nil) else {
-            throw Missing(errorDescription: "Η μηχανή ευρετηρίου λείπει από την εφαρμογή.")
+            throw Missing(errorDescription: String(localized: "The indexing engine is missing from the app."))
         }
         let fm = FileManager.default
         try fm.createDirectory(at: LibraryLocation.supportFolder, withIntermediateDirectories: true)
@@ -42,11 +42,17 @@ enum EngineInstall {
                 if check.terminationStatus == 0 { return URL(filePath: path) }
             }
         }
-        throw Missing(errorDescription: "Χρειάζεται Python 3.10 ή νεότερη (π.χ. brew install python).")
+        throw Missing(errorDescription: String(localized: "Python 3.10 or later is needed (for example: brew install python)."))
     }
 
     static func environment(library: URL) -> [String: String] {
-        ["PATH": toolPath, "HOME": NSHomeDirectory(), "ZETESIS_LIBRARY": library.path(percentEncoded: false),
-         "PYTHONDONTWRITEBYTECODE": "1", "LANG": "el_GR.UTF-8"]
+        var env = ["PATH": toolPath, "HOME": NSHomeDirectory(), "ZETESIS_LIBRARY": library.path(percentEncoded: false),
+                   "PYTHONDONTWRITEBYTECODE": "1", "LANG": "en_US.UTF-8",
+                   "ZETESIS_TOPIC_FOLDERS": LibraryLocation.keepsTopicFolders(in: library) ? "1" : "0"]
+        // The text-recognition helper built into the app (OCRTool), for scanned books.
+        if let ocr = Bundle.main.url(forAuxiliaryExecutable: "zetesis-ocr") {
+            env["ZETESIS_OCR"] = ocr.path(percentEncoded: false)
+        }
+        return env
     }
 }

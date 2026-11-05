@@ -6,14 +6,14 @@ struct SidebarView: View {
     var body: some View {
         @Bindable var model = model
         List(selection: $model.shelf) {
-            Section("Βιβλιοθήκη") {
-                row("Όλα τα βιβλία", systemImage: "books.vertical", shelf: .all)
-                row("Πρόσφατα", systemImage: "clock", shelf: .recent)
-                row("Αυτόματη ταξινόμηση", systemImage: "sparkles", shelf: .unchecked)
+            Section("Library") {
+                row(String(localized: "All Books"), systemImage: "books.vertical", shelf: .all)
+                row(String(localized: "Recent"), systemImage: "clock", shelf: .recent)
+                row(String(localized: "Sorted Automatically"), systemImage: "sparkles", shelf: .unchecked)
             }
-            Section("Θέματα") {
+            Section("Topics") {
                 ForEach(model.topics, id: \.name) { topic in
-                    row(topic.name, systemImage: "folder", shelf: .topic(topic.name))
+                    row(Topic.displayName(topic.name), systemImage: "folder", shelf: .topic(topic.name))
                 }
             }
         }
@@ -42,14 +42,17 @@ struct IndexStatus: View {
                     Text(model.updater.phase.label)
                 }
                 if model.updater.booksExtracted > 0 {
-                    Text("\(model.updater.booksExtracted) βιβλία διαβάστηκαν").foregroundStyle(.secondary)
+                    Text("\(model.updater.booksExtracted) books read").foregroundStyle(.secondary)
+                }
+                if let progress = model.updater.recognition {
+                    Text("Scanned book \(progress.done + 1) of \(progress.total)").foregroundStyle(.secondary)
                 }
             } else if let updated = model.lastUpdated {
-                Text("Ευρετήριο: \(updated.formatted(.relative(presentation: .named)))")
+                Text("Index: \(updated.formatted(.relative(presentation: .named)))")
                     .foregroundStyle(.secondary)
             }
             if !model.libraryIsReachable {
-                Label("Ο δίσκος της βιβλιοθήκης δεν είναι συνδεδεμένος", systemImage: "externaldrive.badge.xmark")
+                Label("The library’s disk is not connected", systemImage: "externaldrive.badge.xmark")
                     .foregroundStyle(.orange)
             }
             if let error = model.updater.lastError ?? model.errorMessage {

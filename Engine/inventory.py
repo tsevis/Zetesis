@@ -1,15 +1,21 @@
-"""Build inventory.json: one entry per book, linking PDF/EPUB and its md/json/image folder."""
+"""Build inventory.json: one entry per book, linking its files (PDF, EPUB, DjVu, Word, text…) and
+its md/json/image folder."""
 import json
 import os
 import re
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 from config import DATA, INVENTORY, ROOT, SKIP_DIRS
 
 DIR_CACHE = DATA / "dirs.json"
-BOOK_EXT = {".pdf", ".epub", ".djvu", ".txt"}
+BOOK_EXT = {".pdf", ".epub", ".djvu", ".txt", ".docx", ".doc", ".rtf", ".odt"}
+# A folder with more text files than this holds page dumps (scans' OCR output), not books.
+MAX_TXT_BOOKS_PER_FOLDER = 5
+# Text files that come with downloads and are not books.
+NOT_BOOKS = re.compile(r"(manifest|readme|licen[cs]e|copying|changelog|checksums?)$", re.IGNORECASE)
 IMG_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 FRESH_S = 3
 
@@ -23,8 +29,8 @@ def parse_title_author(stem):
 
 
 def norm(s):
-    s = s.replace("()", "")
-    return re.sub(r"[^0-9a-z\u0370-\u03ff\u4e00-\u9fff\u3040-\u30ff]", "", s.lower())
+    """Letters and digits only, of any script, so names match however they are punctuated."""
+    return re.sub(r"[\W_]", "", unicodedata.normalize("NFC", s).lower())
 
 
 def is_main_md(rel_dir, name):
@@ -108,6 +114,14 @@ def walk(cache: dict) -> dict:
     return found
 
 
+def txt_books_here(rel: str, names: list) -> bool:
+    """Text files are books at the top, and in folders that hold a few of them and no Markdown."""
+    if not rel:
+        return True
+    exts = [os.path.splitext(n)[1].lower() for n in names]
+    return ".md" not in exts and exts.count(".txt") <= MAX_TXT_BOOKS_PER_FOLDER
+
+
 def load_dir_cache() -> dict:
     try:
         return json.loads(DIR_CACHE.read_text())
@@ -121,10 +135,12 @@ def scan():
     dirs = walk(load_dir_cache())
     for rel, entry in dirs.items():
         rel_dir = Path(rel)
+        txt_are_books = txt_books_here(rel, entry["f"])
         for name in sorted(entry["f"]):
             ext = os.path.splitext(name)[1].lower()
             path = os.path.join(rel, name) if rel else name
-            if ext in BOOK_EXT and not (ext == ".txt" and rel):
+            stem = os.path.splitext(name)[0]
+            if ext in BOOK_EXT and (ext != ".txt" or (txt_are_books and not NOT_BOOKS.search(stem))):
                 key = str(rel_dir / os.path.splitext(name)[0])
                 books.setdefault(key, {"files": [], "md": [], "folder": None})
                 books[key]["files"].append(path)
@@ -159,7 +175,7 @@ def scan():
 def save_dir_cache(dirs: dict) -> None:
     """Folders changed in the last FRESH_S are stored without their time, so they are listed again:
     HFS+ keeps whole seconds, so a file added later in the same second would leave the time as is."""
-    DATA.mkdir(exist_ok=True)
+    DATA.mkdir(parents=True, exist_ok=True)
     fresh = time.time_ns() - FRESH_S * 1_000_000_000
     stored = {rel: e if e["m"] < fresh else dict(e, m=-1) for rel, e in dirs.items()}
     tmp = DIR_CACHE.with_suffix(".tmp")

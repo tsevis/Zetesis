@@ -23,7 +23,7 @@ enum BackgroundAgent {
                     continuation.resume()
                 } else {
                     continuation.resume(throwing: EngineInstall.Missing(
-                        errorDescription: "Η αυτόματη ενημέρωση δεν άλλαξε (κωδικός \(finished.terminationStatus))."))
+                        errorDescription: String(localized: "Background updates were not changed (code \(finished.terminationStatus)).")))
                 }
             }
             do { try process.run() } catch { continuation.resume(throwing: error) }

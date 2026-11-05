@@ -15,9 +15,9 @@ final class SQLiteConnection: @unchecked Sendable {
         var handle: OpaquePointer?
         let flags = SQLITE_OPEN_READONLY | SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_URI
         guard sqlite3_open_v2(path.path, &handle, flags, nil) == SQLITE_OK, let handle else {
-            let message = handle.map { String(cString: sqlite3_errmsg($0)) } ?? "δεν άνοιξε"
+            let message = handle.map { String(cString: sqlite3_errmsg($0)) } ?? String(localized: "could not be opened")
             sqlite3_close(handle)
-            throw SQLiteError(message: "Το ευρετήριο δεν άνοιξε: \(message)")
+            throw SQLiteError(message: String(localized: "The index could not be opened: \(message)"))
         }
         db = handle
         sqlite3_busy_timeout(db, 2000)

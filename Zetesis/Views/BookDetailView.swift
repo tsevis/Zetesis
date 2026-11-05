@@ -20,7 +20,7 @@ struct BookDetailView: View {
                 if model.isQuerying {
                     hitsList
                 } else {
-                    Text("Γράψε μια λέξη στην αναζήτηση για να δεις σε ποιες σελίδες αυτού του βιβλίου εμφανίζεται.")
+                    Text("Type a word in the search field to see on which pages of this book it appears.")
                         .foregroundStyle(.secondary)
                 }
             }
@@ -34,7 +34,7 @@ struct BookDetailView: View {
     @ViewBuilder
     private var hitsList: some View {
         HStack {
-            Text("Σελίδες με ευρήματα").font(.title3.bold())
+            Text("Pages with Matches").font(.title3.bold())
             if isLoading { ProgressView().controlSize(.small) }
             Spacer()
             Text("\(pages.count)\(pages.count == SearchEngine.bookPageHitLimit ? "+" : "")")
@@ -92,8 +92,8 @@ struct BookHeader: View {
                 if !book.author.isEmpty { Text(book.author).font(.title3).foregroundStyle(.secondary) }
                 HStack {
                     topicMenu
-                    Text("\(book.pages) σελίδες").foregroundStyle(.secondary)
-                    if book.images > 0 { Text("· \(book.images) εικόνες").foregroundStyle(.secondary) }
+                    Text("\(book.pages) pages").foregroundStyle(.secondary)
+                    if book.images > 0 { Text("· \(book.images) images").foregroundStyle(.secondary) }
                 }
                 if !book.tags.isEmpty {
                     Text(book.tags.joined(separator: " · ")).font(.callout).foregroundStyle(.secondary)
@@ -102,25 +102,25 @@ struct BookHeader: View {
             }
         }
         .task(id: book.id) { cover = await Cover.image(for: book, library: model.library) }
-        .alert("Νέο θέμα", isPresented: $isNamingTopic) {
-            TextField("Όνομα θέματος", text: $newTopic)
-            Button("Ορισμός") { if !newTopic.isEmpty { model.setTopic(newTopic, for: book) } }
-            Button("Άκυρο", role: .cancel) {}
+        .alert("New Topic", isPresented: $isNamingTopic) {
+            TextField("Topic name", text: $newTopic)
+            Button("Set") { if !newTopic.isEmpty { model.setTopic(newTopic, for: book) } }
+            Button("Cancel", role: .cancel) {}
         }
     }
 
     private var topicMenu: some View {
         Menu {
             ForEach(model.topics, id: \.name) { topic in
-                Button(topic.name) { model.setTopic(topic.name, for: book) }
+                Button(Topic.displayName(topic.name)) { model.setTopic(topic.name, for: book) }
             }
             Divider()
-            Button("Νέο θέμα…") {
+            Button("New Topic…") {
                 newTopic = ""
                 isNamingTopic = true
             }
             if book.autoTopic {
-                Button("Σωστό, κράτησέ το") { model.setTopic(book.topic, for: book) }
+                Button("Correct, Keep It") { model.setTopic(book.topic, for: book) }
             }
         } label: {
             TopicChip(book: book)
@@ -128,12 +128,12 @@ struct BookHeader: View {
         .menuStyle(.button)
         .buttonStyle(.plain)
         .fixedSize()
-        .help("Αλλαγή θέματος")
+        .help("Change topic")
     }
 
     private var actions: some View {
         HStack {
-            Button("Ανάγνωση", systemImage: "book", action: open)
+            Button("Read", systemImage: "book", action: open)
                 .buttonStyle(.borderedProminent)
             if let file = book.mainFile, let library = model.library {
                 Button("Preview", systemImage: "arrow.up.forward.app") {
@@ -144,7 +144,7 @@ struct BookHeader: View {
                 }
             }
             if let folder = book.folder, let library = model.library {
-                Button("Φάκελος md", systemImage: "photo.on.rectangle") {
+                Button("md Folder", systemImage: "photo.on.rectangle") {
                     NSWorkspace.shared.open(LibraryLocation.url(folder, in: library))
                 }
             }
@@ -165,7 +165,7 @@ struct PageHitCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Button("σελ. \(page.page)", action: open).buttonStyle(.link).font(.callout.bold())
+                Button("p. \(page.page)", action: open).buttonStyle(.link).font(.callout.bold())
                 if page.source != "pdf" { Text(page.source).font(.caption).foregroundStyle(.tertiary) }
             }
             Text(page.snippet.attributed).font(.callout).textSelection(.enabled)

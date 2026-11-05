@@ -17,7 +17,7 @@ enum TopicEditor {
                     continuation.resume()
                 } else {
                     continuation.resume(throwing: EngineInstall.Missing(
-                        errorDescription: "Το θέμα δεν άλλαξε (κωδικός \(finished.terminationStatus))."))
+                        errorDescription: String(localized: "The topic was not changed (code \(finished.terminationStatus)).")))
                 }
             }
             do { try process.run() } catch { continuation.resume(throwing: error) }
