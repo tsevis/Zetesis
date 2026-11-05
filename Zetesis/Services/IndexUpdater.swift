@@ -27,6 +27,9 @@ final class IndexUpdater {
     private(set) var booksExtracted = 0
     /// Scanned books recognised so far in this run, and how many were waiting.
     private(set) var recognition: (done: Int, total: Int)?
+    /// Scanned books with Greek titles left unread because Tesseract is not installed, as of the last
+    /// run that reached text recognition.
+    private(set) var greekBooksWaiting = 0
     private(set) var lastError: String?
     /// Called on the main actor after every run, whatever it printed: the index may have changed even
     /// when a run failed half-way, and reloading the book list is cheap.
@@ -114,6 +117,8 @@ final class IndexUpdater {
                 wasBusy = true
             } else if line.hasPrefix("text: ") {
                 booksExtracted += 1
+            } else if line.hasPrefix("@ocr-waiting "), let n = Int(line.dropFirst(13)) {
+                greekBooksWaiting = n
             } else if line.hasPrefix("@ocr ") {
                 let numbers = line.split(separator: " ").dropFirst().compactMap { Int($0) }
                 if numbers.count == 2 { recognition = (numbers[0], numbers[1]) }

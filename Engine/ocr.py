@@ -147,6 +147,8 @@ def main(should_stop: Callable[[], bool], on_book: Callable[[], None]) -> int:
     if not OCR_TOOL or not Path(OCR_TOOL).exists():
         return 0
     todo, waiting = runnable(pending(json.loads(INVENTORY.read_text()), should_stop), tesseract())
+    # Always sent, so the app's notice goes away once Tesseract is installed.
+    print(f"@ocr-waiting {waiting}", flush=True)
     if waiting:
         log.info("%d books with Greek titles wait for Tesseract (brew install tesseract tesseract-lang)", waiting)
     done = 0

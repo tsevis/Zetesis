@@ -55,6 +55,14 @@ struct IndexStatus: View {
                 Label("The library’s disk is not connected", systemImage: "externaldrive.badge.xmark")
                     .foregroundStyle(.orange)
             }
+            if model.updater.greekBooksWaiting > 0 {
+                Label("\(model.updater.greekBooksWaiting) Greek books wait for Tesseract", systemImage: "text.viewfinder")
+                    .foregroundStyle(.orange)
+                Text("To read scanned Greek books, install it in Terminal:").foregroundStyle(.secondary)
+                Text(verbatim: "brew install tesseract tesseract-lang")
+                    .font(.caption.monospaced())
+                    .textSelection(.enabled)
+            }
             if let error = model.updater.lastError ?? model.errorMessage {
                 Label(error, systemImage: "exclamationmark.triangle").foregroundStyle(.red).lineLimit(4)
             }

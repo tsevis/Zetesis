@@ -7,7 +7,7 @@ ones too), EPUB, DjVu, Word, RTF, OpenDocument, plain text and folders of Markdo
 folder of books works, Calibre libraries included, and nothing in it is moved or written to. Named after *zetesis* (ζήτησις), the ancient
 philosophers' word for inquiry: the search that goes on until it finds.
 
-**Version 0.2.1.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
+**Version 0.2.2.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
 French and Ukrainian, following the system's language.
 
 ## What it does

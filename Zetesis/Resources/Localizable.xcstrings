@@ -7,6 +7,136 @@
     "%lld": {
       "shouldTranslate": false
     },
+    "%lld Greek books wait for Tesseract": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld griechisches Buch wartet auf Tesseract"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld griechische Bücher warten auf Tesseract"
+                }
+              }
+            }
+          }
+        },
+        "el": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld ελληνικό βιβλίο περιμένει το Tesseract"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld ελληνικά βιβλία περιμένουν το Tesseract"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Greek book waits for Tesseract"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Greek books wait for Tesseract"
+                }
+              }
+            }
+          }
+        },
+        "fr": {
+          "variations": {
+            "plural": {
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld de livres grecs attendent Tesseract"
+                }
+              },
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld livre grec attend Tesseract"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld livres grecs attendent Tesseract"
+                }
+              }
+            }
+          }
+        },
+        "it": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld libro greco attende Tesseract"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld libri greci attendono Tesseract"
+                }
+              }
+            }
+          }
+        },
+        "uk": {
+          "variations": {
+            "plural": {
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld грецькі книжки чекають на Tesseract"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld грецьких книжок чекають на Tesseract"
+                }
+              },
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld грецька книжка чекає на Tesseract"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld грецької книжки чекають на Tesseract"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld books": {
       "localizations": {
         "de": {
@@ -3254,6 +3384,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Назви, автори, теми"
+          }
+        }
+      }
+    },
+    "To read scanned Greek books, install it in Terminal:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um gescannte griechische Bücher zu lesen, installieren Sie es im Terminal:"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Για να διαβαστούν τα σαρωμένα ελληνικά βιβλία, εγκαταστήστε το από το Τερματικό:"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour lire les livres grecs numérisés, installez-le dans le Terminal :"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Per leggere i libri greci scansionati, installalo dal Terminale:"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Щоб прочитати скановані грецькі книжки, встановіть його в Терміналі:"
           }
         }
       }
