@@ -13,6 +13,8 @@ from collections import Counter
 from pathlib import Path
 
 PDFINFO_TIMEOUT_S = 30
+# An OPF this large is a zip bomb, not a package document (the largest in a 36-EPUB library: 0.17 MB).
+MAX_OPF_BYTES = 5_000_000
 MIN_TITLE = 3
 DC = "{http://purl.org/dc/elements/1.1/}"
 JUNK_TITLE = re.compile(
@@ -59,21 +61,27 @@ def from_opf(xml: bytes) -> dict:
     return {"title": title, "author": ", ".join(authors), "subjects": subjects}
 
 
+def small_entry(z: zipfile.ZipFile, name: str) -> bytes | None:
+    """The entry's bytes, or None when it is missing or would inflate past MAX_OPF_BYTES."""
+    try:
+        info = z.getinfo(name)
+    except KeyError:
+        return None
+    return z.read(info) if info.file_size <= MAX_OPF_BYTES else None
+
+
 def epub_opf(path: Path) -> bytes | None:
     with zipfile.ZipFile(path) as z:
         try:
-            container = ET.fromstring(z.read("META-INF/container.xml"))
-        except (KeyError, ET.ParseError):
+            container = ET.fromstring(small_entry(z, "META-INF/container.xml") or b"")
+        except ET.ParseError:
             container = None
         if container is not None:
             for e in container.iter():
                 if e.tag.endswith("rootfile") and e.get("full-path"):
-                    try:
-                        return z.read(e.get("full-path"))
-                    except KeyError:
-                        break
+                    return small_entry(z, e.get("full-path"))
         name = next((n for n in z.namelist() if n.lower().endswith(".opf")), None)
-        return z.read(name) if name else None
+        return small_entry(z, name) if name else None
 
 
 def from_pdfinfo(output: str) -> dict:

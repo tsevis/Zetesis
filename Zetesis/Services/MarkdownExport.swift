@@ -7,7 +7,7 @@ enum MarkdownExport {
     static func build(outcome: SearchOutcome, hits: [BookHit], titleMatches: [Book], scope: String?,
                       library: URL, engine: SearchEngine) async throws -> String {
         let date = Date().formatted(date: .numeric, time: .shortened)
-        var out = ["# " + String(localized: "Search: \(outcome.text)"), ""]
+        var out = ["# " + String(localized: "Search: \(escape(outcome.text))"), ""]
         var summary = String(localized: "Exported \(date)")
         if let scope { summary += " · \(scope)" }
         let pageTotal = hits.reduce(0) { $0 + $1.pages }
@@ -39,18 +39,18 @@ enum MarkdownExport {
 
     private static func titleLine(_ book: Book, library: URL) -> String {
         let target = book.mainFile ?? book.folder ?? ""
-        let author = book.author.isEmpty ? "" : " — \(book.author)"
-        return "- [\(escape(book.title))](\(fileURL(target, library: library)))\(author) · *\(Topic.displayName(book.topic))*"
+        let author = book.author.isEmpty ? "" : " — \(escape(book.author))"
+        return "- [\(escape(book.title))](\(fileURL(target, library: library)))\(author) · *\(escape(Topic.displayName(book.topic)))*"
     }
 
     private static func section(_ n: Int, hit: BookHit, pages: [PageHit], library: URL) -> [String] {
         let book = hit.book
         var lines = ["### \(n). \(escape(book.title))", ""]
         var meta: [String] = []
-        if !book.author.isEmpty { meta.append("**\(String(localized: "Author")):** \(book.author)") }
-        meta.append("**\(String(localized: "Topic")):** \(Topic.displayName(book.topic))"
+        if !book.author.isEmpty { meta.append("**\(String(localized: "Author")):** \(escape(book.author))") }
+        meta.append("**\(String(localized: "Topic")):** \(escape(Topic.displayName(book.topic)))"
                     + (book.autoTopic ? " (\(String(localized: "automatic")))" : ""))
-        if !book.tags.isEmpty { meta.append("**\(String(localized: "Tags")):** \(book.tags.joined(separator: ", "))") }
+        if !book.tags.isEmpty { meta.append("**\(String(localized: "Tags")):** \(escape(book.tags.joined(separator: ", ")))") }
         meta.append("**\(String(localized: "Pages with matches")):** \(hit.pages)")
         lines += [meta.joined(separator: " · "), ""]
         var files = book.files.map { "[\(($0 as NSString).pathExtension.uppercased())](\(fileURL($0, library: library)))" }
@@ -82,7 +82,9 @@ enum MarkdownExport {
     }
 
     private static func fileURL(_ relative: String, library: URL, page: Int? = nil) -> String {
+        // Parentheses end a Markdown link target, and file names often have them ("Title (Author).pdf").
         let url = LibraryLocation.url(relative, in: library).absoluteString
+            .replacingOccurrences(of: "(", with: "%28").replacingOccurrences(of: ")", with: "%29")
         return page.map { "\(url)#page=\($0)" } ?? url
     }
 }

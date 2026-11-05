@@ -38,8 +38,8 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.reference
         INFOPLIST_KEY_NSHumanReadableCopyright: "© 2026 Charis Tsevis"
         INFOPLIST_KEY_NSRemovableVolumesUsageDescription: "Zetesis reads the books of your library from the external disk."
-        MARKETING_VERSION: "0.3.0"
-        CURRENT_PROJECT_VERSION: "5"
+        MARKETING_VERSION: "0.3.1"
+        CURRENT_PROJECT_VERSION: "6"
         DEVELOPMENT_LANGUAGE: en
         LOCALIZATION_PREFERS_STRING_CATALOGS: YES
         SWIFT_EMIT_LOC_STRINGS: YES

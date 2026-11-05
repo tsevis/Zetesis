@@ -26,6 +26,8 @@ MIN_PAGE_CHARS = 3
 TOOL_TIMEOUT_S = 300
 # A page with less text than this counts as an image for text recognition.
 OCR_MIN_CHARS = 20
+# An EPUB entry inflating past this is a zip bomb, not a chapter (the largest in a 36-EPUB library: 0.4 MB).
+MAX_ENTRY_BYTES = 20_000_000
 OCR_MIN_MISSING = 3
 OCR_MISSING_SHARE = 0.1
 
@@ -112,7 +114,8 @@ def md_pages(path):
 def epub_pages(path):
     pages = []
     with zipfile.ZipFile(path) as z:
-        names = sorted(n for n in z.namelist() if n.lower().endswith((".xhtml", ".html", ".htm")))
+        names = sorted(i.filename for i in z.infolist()
+                       if i.filename.lower().endswith((".xhtml", ".html", ".htm")) and i.file_size <= MAX_ENTRY_BYTES)
         for i, n in enumerate(names):
             body = z.read(n).decode("utf-8", errors="replace")
             text = html.unescape(TAG.sub(" ", re.sub(r"(?is)<(script|style).*?</\1>", " ", body)))

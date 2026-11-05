@@ -4,3 +4,4 @@ DerivedData/
 __pycache__/
 # Generated from project.yml by `xcodegen generate`
 Zetesis.xcodeproj/
+.ruff_cache/

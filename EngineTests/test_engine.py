@@ -4,10 +4,12 @@ Run from the repository root:  python3 EngineTests/test_engine.py  (or with pyte
 """
 import os
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 from pathlib import Path
 
 os.environ.setdefault("ZETESIS_LIBRARY", tempfile.mkdtemp())
@@ -143,6 +145,35 @@ def test_stopping_the_engine_also_stops_the_program_it_is_waiting_for():
     if alive:
         os.kill(child, signal.SIGKILL)
     assert not alive, "the program outlived the engine"
+
+
+def test_a_huge_entry_in_an_epub_is_not_inflated_into_memory():
+    # 30 MB of one letter compresses to a few KB: a hostile EPUB could hold gigabytes like this.
+    path = Path(tempfile.mkdtemp()) / "bomb.epub"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("META-INF/container.xml", "<container/>")
+        z.writestr("a.opf", "<package>" + " " * 30_000_000 + "</package>")
+        z.writestr("ch1.xhtml", "<p>a real chapter of the book</p>")
+        z.writestr("ch2.xhtml", "<p>" + "a" * 30_000_000 + "</p>")
+    assert [p["text"] for p in extract.epub_pages(path)] == ["a real chapter of the book"]
+    assert metadata.epub_opf(path) is None
+
+
+def test_a_topic_named_dot_dot_stays_inside_the_topic_folder():
+    import make_topic_folders
+    book = {"key": "k", "files": ["Some Book.pdf"], "folder": ""}
+    for name in ("..", ".", "../../etc"):
+        links = make_topic_folders.wanted_links([book], {"k": {"topic": name}})
+        out = os.path.normpath(make_topic_folders.OUT)
+        assert all(os.path.normpath(link).startswith(out + os.sep) for link in links), (name, links)
+
+
+def test_the_index_folder_is_readable_by_its_owner_only():
+    # It holds the full text of every book in the library.
+    import update
+    folder = Path(tempfile.mkdtemp()) / "Zetesis"
+    update.make_private(folder)
+    assert stat.S_IMODE(folder.stat().st_mode) == 0o700
 
 
 if __name__ == "__main__":

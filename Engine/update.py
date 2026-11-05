@@ -131,6 +131,12 @@ def recognise_scans(since: float) -> bool:
     return changed()
 
 
+def make_private(folder) -> None:
+    """The index, text caches and topics hold what the library contains: readable by its owner only."""
+    folder.mkdir(parents=True, exist_ok=True)
+    folder.chmod(0o700)
+
+
 def stop_on_sigterm() -> None:
     """Make SIGTERM (the app quitting, launchd unloading the agent) an ordinary exit: subprocess.run
     then kills the program it is waiting for (the OCR helper), and the lock is released."""
@@ -139,7 +145,7 @@ def stop_on_sigterm() -> None:
 
 def main() -> int:
     stop_on_sigterm()
-    APP_SUPPORT.mkdir(parents=True, exist_ok=True)
+    make_private(APP_SUPPORT)
     DATA.mkdir(parents=True, exist_ok=True)
     full = "--full" in sys.argv
     settle = 0 if "--now" in sys.argv else SETTLE_S

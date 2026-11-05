@@ -17,7 +17,9 @@ UNSORTED_FOLDER = "Unsorted"
 
 
 def safe_name(s: str) -> str:
-    return s.replace("/", "-").replace(":", "-").strip() or "untitled"
+    """A single file name: no separators or control characters, and no leading dot ("..", hidden files)."""
+    name = "".join(c for c in s.replace("/", "-").replace(":", "-") if unicodedata.category(c)[0] != "C")
+    return name.strip().lstrip(".").strip() or "untitled"
 
 
 def wanted_links(inv: list, topics: dict) -> dict:
