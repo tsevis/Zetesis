@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SidebarView: View {
     @Environment(LibraryModel.self) private var model
+    @State private var newTopic = ""
+    @State private var isNamingTopic = false
 
     var body: some View {
         @Bindable var model = model
@@ -11,19 +13,48 @@ struct SidebarView: View {
                 row(String(localized: "Recent"), systemImage: "clock", shelf: .recent)
                 row(String(localized: "Sorted Automatically"), systemImage: "sparkles", shelf: .unchecked)
             }
-            Section("Topics") {
+            Section {
                 ForEach(model.topics, id: \.name) { topic in
                     row(Topic.displayName(topic.name), systemImage: "folder", shelf: .topic(topic.name))
+                        .contextMenu {
+                            if topic.count == 0 {
+                                Button("Remove Topic") { model.removeTopic(topic.name) }
+                            }
+                        }
                 }
+            } header: {
+                topicsHeader
             }
         }
         .listStyle(.sidebar)
+        .alert("New Topic", isPresented: $isNamingTopic) {
+            TextField("Topic name", text: $newTopic)
+            Button("Create") { model.addTopic(newTopic) }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("To file a book under it, use the topic menu on the book’s page.")
+        }
         .safeAreaInset(edge: .bottom) {
             VStack(alignment: .leading, spacing: 10) {
                 IndexStatus()
                 TsevisMark()
             }
             .padding(10)
+        }
+    }
+
+    private var topicsHeader: some View {
+        HStack {
+            Text("Topics")
+            Spacer()
+            Button("New Topic", systemImage: "plus") {
+                newTopic = ""
+                isNamingTopic = true
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.plain)
+            .disabled(model.library == nil)
+            .help("New Topic")
         }
     }
 

@@ -39,6 +39,7 @@ final class LibraryModel {
     private(set) var errorMessage: String?
     private var averagePages = 1.0
     private var recentIDs: Set<Int64> = []
+    private var declaredTopics: [String] = []
     private var searchTask: Task<Void, Never>?
     private var bestPages: [Int64: [PageHit]] = [:]
 
@@ -66,6 +67,8 @@ final class LibraryModel {
     func open(_ folder: URL) {
         library = folder
         LibraryLocation.library = folder
+        declaredTopics = DeclaredTopics.load(for: folder)
+        listTopics()
         Task { await reopen(force: true) }
         updater.start(library: folder)
         // The LaunchAgent keeps the paths of the app it was installed from; refresh them in case it moved.
@@ -195,11 +198,36 @@ final class LibraryModel {
         booksByTitle = books.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
         averagePages = books.isEmpty ? 1 : Double(books.reduce(0) { $0 + $1.pages }) / Double(books.count)
         recentIDs = Set(books.sorted { $0.added > $1.added }.prefix(Self.recentCount).map(\.id))
-        var counts: [String: Int] = [:]
-        for book in books { counts[book.topic, default: 0] += 1 }
-        topics = counts.map { (name: $0.key, count: $0.value) }
-            .sorted { ($0.count, $1.name) > ($1.count, $0.name) }
+        listTopics()
         if let selected = selectedBookID, booksByID[selected] == nil { selectedBookID = nil }
+    }
+
+    private func listTopics() {
+        topics = TopicList.entries(bookTopics: booksByID.values.map(\.topic), declared: declaredTopics)
+    }
+
+    /// Makes a topic that has no book yet and shows it; a name already in use shows that topic.
+    func addTopic(_ name: String) {
+        guard let library, let name = TopicList.cleaned(name) else { return }
+        if let known = TopicList.existing(name, in: topics.map(\.name)) {
+            shelf = .topic(known)
+            return
+        }
+        declare(declaredTopics + [name], in: library)
+        shelf = .topic(name)
+    }
+
+    /// Removes a topic made by hand. One that has books stays: it goes when its books move.
+    func removeTopic(_ name: String) {
+        guard let library, !booksByID.values.contains(where: { $0.topic == name }) else { return }
+        declare(declaredTopics.filter { $0 != name }, in: library)
+        if shelf == .topic(name) { shelf = .all }
+    }
+
+    private func declare(_ names: [String], in library: URL) {
+        declaredTopics = names
+        DeclaredTopics.save(names, for: library)
+        listTopics()
     }
 
     /// Sets a book's topic by hand (no longer automatic) and lets the engine re-index it.
