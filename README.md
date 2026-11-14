@@ -7,7 +7,7 @@ ones too), EPUB, DjVu, Word, RTF, OpenDocument, plain text and folders of Markdo
 folder of books works, Calibre libraries included, and nothing in it is moved or written to. Named after *zetesis* (ζήτησις), the ancient
 philosophers' word for inquiry: the search that goes on until it finds.
 
-**Version 0.3.1.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
+**Version 0.3.2.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
 French and Ukrainian, following the system's language.
 
 ![Searching for "acanthus": 110 books with matches, each with the pages and passages where the word appears, and the chosen book's matching pages on the right.](documents/screenshots/search.png)

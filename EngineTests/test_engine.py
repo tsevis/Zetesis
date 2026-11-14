@@ -176,6 +176,62 @@ def test_the_index_folder_is_readable_by_its_owner_only():
     assert stat.S_IMODE(folder.stat().st_mode) == 0o700
 
 
+def test_a_stopped_engine_says_so_in_the_log():
+    # A run of text recognition that ends without a line in the log looks like a crash.
+    engine = Path(__file__).resolve().parent.parent / "Engine"
+    logfile = Path(tempfile.mkdtemp()) / "engine.log"
+    script = f"import sys; sys.path.insert(0, {str(engine)!r}); import logging, time, update; " \
+             f"logging.basicConfig(filename={str(logfile)!r}, level=logging.INFO); " \
+             "update.stop_on_sigterm(); print('ready', flush=True); time.sleep(30)"
+    parent = subprocess.Popen([sys.executable, "-c", script], stdout=subprocess.PIPE)
+    parent.stdout.readline()
+    parent.send_signal(signal.SIGTERM)
+    parent.wait(timeout=5)
+    parent.stdout.close()
+    assert "stopped" in logfile.read_text()
+
+
+def test_pages_read_before_the_helper_ran_out_of_time_are_kept():
+    # A book that hits the time limit after hours of reading must not lose the pages already read.
+    tool = Path(tempfile.mkdtemp()) / "helper"
+    tool.write_text('#!/bin/sh\necho \'{"page": 1, "text": "read before the limit"}\'\n'
+                    'printf \'{"page": 2, "te\'\nexec sleep 30\n')
+    tool.chmod(0o755)
+    saved = ocr.OCR_TOOL, ocr.BOOK_TIMEOUT_S, ocr.page_count
+    ocr.OCR_TOOL, ocr.BOOK_TIMEOUT_S, ocr.page_count = str(tool), 1, lambda pdf: 0
+    try:
+        ocr.recognise(Path("book.pdf"), [])
+        raise AssertionError("the helper was not stopped at the limit")
+    except ocr.CutShort as e:
+        assert e.pages == {1: "read before the limit"}
+    finally:
+        ocr.OCR_TOOL, ocr.BOOK_TIMEOUT_S, ocr.page_count = saved
+
+
+def test_pages_read_before_the_helper_gave_up_are_kept():
+    # The helper ends itself when a page gets no answer from the system; what it read stays.
+    tool = Path(tempfile.mkdtemp()) / "helper"
+    tool.write_text('#!/bin/sh\necho \'{"page": 1, "text": "read before it gave up"}\'\n'
+                    'echo "page 2: no answer" >&2\nexit 3\n')
+    tool.chmod(0o755)
+    saved = ocr.OCR_TOOL, ocr.page_count
+    ocr.OCR_TOOL, ocr.page_count = str(tool), lambda pdf: 0
+    try:
+        ocr.recognise(Path("book.pdf"), [])
+        raise AssertionError("a helper that gave up was taken for one that finished")
+    except ocr.CutShort as e:
+        assert e.pages == {1: "read before it gave up"}
+        assert "page 2: no answer" in str(e)
+    finally:
+        ocr.OCR_TOOL, ocr.page_count = saved
+
+
+def test_a_line_separator_inside_a_page_does_not_lose_the_page():
+    # The helper leaves U+2028 unescaped in its JSON; only a newline ends one of its lines.
+    out = '{"page": 1, "text": "first\u2028second"}\n{"page": 2, "text": "next"}\n'.encode()
+    assert ocr.helper_pages(out) == {1: "first\u2028second", 2: "next"}
+
+
 if __name__ == "__main__":
     failed = 0
     for name, test in [(n, f) for n, f in globals().items() if n.startswith("test_")]:
