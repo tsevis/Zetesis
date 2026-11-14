@@ -95,16 +95,55 @@ def assess(book: dict) -> dict:
     return ocr_plan(pdfs, {str(p): (page_count(p), with_text) for p in pdfs})
 
 
-def recognise(pdf: Path, args: list) -> dict:
-    """{page: text} for the pages of pdf the helper read."""
-    timeout = max(BOOK_TIMEOUT_S, page_count(pdf) * PAGE_TIMEOUT_S)
-    out = subprocess.run([OCR_TOOL, str(pdf), "--min-chars", str(OCR_MIN_CHARS), *args], capture_output=True,
-                         timeout=timeout, check=True)
+class CutShort(Exception):
+    """The helper did not finish a book (out of time, or it gave up); pages holds what it had read."""
+
+    def __init__(self, pages: dict, why: str) -> None:
+        super().__init__(f"{why} ({len(pages)} pages read)")
+        self.pages = pages
+
+
+def helper_pages(output: bytes | None) -> dict:
+    """{page: text} from the helper's output; a last line cut short by a timeout is left out."""
+    # Split on the newline only: the helper leaves U+2028 and U+2029 unescaped inside a page's text.
+    lines = (output or b"").split(b"\n")
     pages = {}
-    for line in out.stdout.decode("utf-8", errors="replace").splitlines():
-        row = json.loads(line)
+    for n, line in enumerate(lines):
+        if not line.strip():
+            continue
+        try:
+            row = json.loads(line.decode("utf-8", errors="replace"))
+        except ValueError:
+            if n == len(lines) - 1:
+                continue
+            raise
         pages[row["page"]] = row["text"].strip()
     return pages
+
+
+def recognise(pdf: Path, args: list) -> dict:
+    """{page: text} for the pages of pdf the helper read; CutShort carries the pages of a cut-off run."""
+    timeout = max(BOOK_TIMEOUT_S, page_count(pdf) * PAGE_TIMEOUT_S)
+    try:
+        out = subprocess.run([OCR_TOOL, str(pdf), "--min-chars", str(OCR_MIN_CHARS), *args],
+                             capture_output=True, timeout=timeout, check=True)
+    except subprocess.TimeoutExpired as e:
+        raise CutShort(helper_pages(e.stdout), f"timed out after {int(timeout)} seconds") from e
+    except subprocess.CalledProcessError as e:
+        said = (e.stderr or b"").decode("utf-8", errors="replace").strip()
+        raise CutShort(helper_pages(e.stdout), said or f"the helper ended with status {e.returncode}") from e
+    return helper_pages(out.stdout)
+
+
+def read_book(files: list, args: list) -> tuple[dict, str | None]:
+    """({page: text} of the book's files, what cut the reading short if anything did)."""
+    found: dict = {}
+    for f in files:
+        try:
+            found = {**found, **recognise(ROOT / f, args)}
+        except CutShort as e:
+            return {**found, **e.pages}, str(e)
+    return found, None
 
 
 def merged(rows: list, found: dict) -> list:
@@ -157,12 +196,14 @@ def main(should_stop: Callable[[], bool], on_book: Callable[[], None]) -> int:
             break
         print(f"@ocr {n} {len(todo)}", flush=True)
         try:
-            found = {}
-            for f in files:
-                found.update(recognise(ROOT / f, args))
+            found, cut_short = read_book(files, args)
             write_rows(book, merged(cached_rows(book), found))
-            write_ocr_status(cache_path(book), {"state": "done"})
-            log.info("text recognised: %s (%d pages)", book["key"], len(found))
+            if cut_short:
+                write_ocr_status(cache_path(book), {"state": "failed", "error": cut_short})
+                log.info("text recognition failed: %s: %s", book["key"], cut_short)
+            else:
+                write_ocr_status(cache_path(book), {"state": "done"})
+                log.info("text recognised: %s (%d pages)", book["key"], len(found))
         except Exception as e:  # noqa: BLE001 — record it and go on with the next book
             write_ocr_status(cache_path(book), {"state": "failed", "error": f"{type(e).__name__}: {e}"})
             log.info("text recognition failed: %s: %s", book["key"], e)

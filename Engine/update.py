@@ -140,7 +140,11 @@ def make_private(folder) -> None:
 def stop_on_sigterm() -> None:
     """Make SIGTERM (the app quitting, launchd unloading the agent) an ordinary exit: subprocess.run
     then kills the program it is waiting for (the OCR helper), and the lock is released."""
-    signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(128 + signum))
+    def stop(signum: int, frame: object) -> None:
+        log.info("stopped: the app quit or background updates were switched off")
+        sys.exit(128 + signum)
+
+    signal.signal(signal.SIGTERM, stop)
 
 
 def main() -> int:

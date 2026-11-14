@@ -3,7 +3,7 @@ import Foundation
 import PDFKit
 import Vision
 
-/// zetesis-ocr <file.pdf> [--min-chars N] [--tesseract PATH [--greek]]
+/// zetesis-ocr <file.pdf> [--min-chars N] [--tesseract PATH [--greek]] [--page-deadline SECONDS]
 ///
 /// Recognises the text of the pages of a PDF that have (almost) none of their own, with macOS Vision,
 /// and prints one JSON line per such page: {"page": n, "text": "...", "engine": "vision"} (pages
@@ -11,6 +11,9 @@ import Vision
 ///
 /// Vision reads no Greek. With --tesseract, a page Vision is unsure of goes to Tesseract's script
 /// detection, and if that says Greek, Tesseract reads it; with --greek, Tesseract reads every page.
+///
+/// A page that gets no answer within the page deadline ends the helper with status 3; the pages
+/// printed until then stand, and the engine keeps them.
 
 let renderScale: CGFloat = 2.5      // 180 dpi: Vision's accurate level reads body text well from here
 let maxSide: CGFloat = 4000         // keeps posters and plates from becoming huge images
@@ -20,6 +23,10 @@ let doubtfulConfidence: Float = 0.8
 let tesseractLanguages = "ell+eng"
 // Tesseract read a test page in 0.4–1.4 s; a page still running after this is stuck.
 let tesseractTimeout: TimeInterval = 120
+// Vision can wait on the system's neural engine without end. Longer than two Tesseract runs on one
+// page (script detection, then reading), so only a page that is truly stuck reaches it.
+let defaultPageDeadline: TimeInterval = 600
+let stuckStatus: Int32 = 3
 
 struct TesseractFailed: LocalizedError {
     let errorDescription: String?
@@ -35,6 +42,7 @@ struct Options {
     var minChars = 20
     var tesseract: String?
     var greek = false
+    var pageDeadline = defaultPageDeadline
 }
 
 func value(after flag: String, in args: inout [String]) -> String? {
@@ -50,11 +58,18 @@ func arguments() -> Options {
     let tesseract = value(after: "--tesseract", in: &args)
     let greek = args.contains("--greek")
     args.removeAll { $0 == "--greek" }
-    guard args.count == 1 else { fail("usage: zetesis-ocr <file.pdf> [--min-chars N] [--tesseract PATH [--greek]]") }
+    let pageDeadline = value(after: "--page-deadline", in: &args)
+    guard args.count == 1 else {
+        fail("usage: zetesis-ocr <file.pdf> [--min-chars N] [--tesseract PATH [--greek]] [--page-deadline SECONDS]")
+    }
     var options = Options(url: URL(filePath: args[0]), tesseract: tesseract, greek: greek)
     if let minChars {
         guard let n = Int(minChars) else { fail("--min-chars needs a number") }
         options.minChars = n
+    }
+    if let pageDeadline {
+        guard let seconds = TimeInterval(pageDeadline), seconds > 0 else { fail("--page-deadline needs seconds") }
+        options.pageDeadline = seconds
     }
     if greek && tesseract == nil { fail("--greek needs --tesseract") }
     return options
@@ -149,12 +164,43 @@ func emit(page: Int, text: String, engine: String) {
     FileHandle.standardOutput.write(data + Data("\n".utf8))
 }
 
+/// Ends the helper when the page in hand has had no answer for `deadline` seconds. The call into
+/// Vision cannot be interrupted from outside, so the way out is to end the process.
+final class Watchdog: @unchecked Sendable {
+    private let lock = NSLock()
+    private var page = 0
+    private var began = Date()
+    private let timer = DispatchSource.makeTimerSource(queue: .global())
+
+    init(deadline: TimeInterval) {
+        timer.schedule(deadline: .now() + 1, repeating: 1)
+        timer.setEventHandler { [self] in
+            let (page, waited) = lock.withLock { (self.page, Date().timeIntervalSince(began)) }
+            guard page > 0, waited > deadline else { return }
+            FileHandle.standardError.write(Data("page \(page): no answer in \(Int(deadline)) s\n".utf8))
+            // Not exit(): its cleanup can wait on the very threads that are stuck. Pages already
+            // printed went out unbuffered, so nothing is lost.
+            _exit(stuckStatus)
+        }
+        timer.resume()
+    }
+
+    func begin(page: Int) {
+        lock.withLock {
+            self.page = page
+            began = Date()
+        }
+    }
+}
+
 let options = arguments()
 guard let document = PDFDocument(url: options.url) else { fail("cannot open \(options.url.path)") }
 if document.isLocked { fail("encrypted: \(options.url.path)") }
 var (tried, failed) = (0, 0)
+let watchdog = Watchdog(deadline: options.pageDeadline)
 for index in 0..<document.pageCount {
     autoreleasepool {
+        watchdog.begin(page: index + 1)
         guard let page = document.page(at: index) else { return }
         let own = (page.string ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         guard own.count < options.minChars, let picture = image(of: page) else { return }
