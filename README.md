@@ -7,7 +7,7 @@ ones too), EPUB, DjVu, Word, RTF, OpenDocument, plain text and folders of Markdo
 folder of books works, Calibre libraries included, and nothing in it is moved or written to. Named after *zetesis* (ζήτησις), the ancient
 philosophers' word for inquiry: the search that goes on until it finds.
 
-**Version 0.3.2.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
+**Version 0.4.0.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
 French and Ukrainian, following the system's language.
 
 ![Searching for "acanthus": 110 books with matches, each with the pages and passages where the word appears, and the chosen book's matching pages on the right.](documents/screenshots/search.png)
@@ -32,7 +32,8 @@ French and Ukrainian, following the system's language.
 - **Topics.** The sidebar groups books by topic. A new book takes the topic of the other books in its
   folder; otherwise the folder's name when it holds several books; otherwise its first metadata
   subject; otherwise the topic of the books it resembles. Automatic topics are marked ✨ until you
-  confirm or change them. On request, a `_Topics/` folder in the library holds the same grouping as
+  confirm or change them. The **+** beside Topics makes a new, empty topic; a book's topic menu files
+  it there, or under a new name. On request, a `_Topics/` folder in the library holds the same grouping as
   symlinks. Nothing is moved.
 - **Scanned books.** PDFs whose pages are mostly images are read with macOS's text recognition, in
   the background after the normal update, the ones with the least text first. A book becomes
