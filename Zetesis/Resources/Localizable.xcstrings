@@ -1694,6 +1694,40 @@
         }
       }
     },
+    "Found by meaning only: %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur nach Bedeutung gefunden: %lld"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Βρέθηκαν μόνο κατά νόημα: %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouvés seulement par le sens : %lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trovati solo per significato: %lld"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знайдено лише за змістом: %lld"
+          }
+        }
+      }
+    },
     "In the title, author or topic · %lld": {
       "localizations": {
         "de": {
@@ -2300,6 +2334,74 @@
         }
       }
     },
+    "Nearest pages by meaning": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächste Seiten nach Bedeutung"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πλησιέστερες σελίδες κατά νόημα"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pages les plus proches par le sens"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pagine più vicine per significato"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найближчі сторінки за змістом"
+          }
+        }
+      }
+    },
+    "Nearest pages by meaning: %lld · p. %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächste Seiten nach Bedeutung: %lld · S. %lld"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πλησιέστερες σελίδες κατά νόημα: %lld · σελ. %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pages les plus proches par le sens : %lld · p. %lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pagine più vicine per significato: %lld · p. %lld"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найближчих сторінок за змістом: %lld · с. %lld"
+          }
+        }
+      }
+    },
     "New Topic": {
       "localizations": {
         "de": {
@@ -2704,6 +2806,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Тут з’являються сторінки зі збігами."
+          }
+        }
+      }
+    },
+    "Pages with matches: %lld · nearest by meaning: %lld · p. %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seiten mit Treffern: %lld · nächste nach Bedeutung: %lld · S. %lld"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σελίδες με ευρήματα: %lld · πλησιέστερες κατά νόημα: %lld · σελ. %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pages avec résultats : %lld · les plus proches par le sens : %lld · p. %lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pagine con risultati: %lld · più vicine per significato: %lld · p. %lld"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сторінок зі збігами: %lld · найближчих за змістом: %lld · с. %lld"
           }
         }
       }
