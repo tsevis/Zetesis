@@ -2266,6 +2266,40 @@
         }
       }
     },
+    "Nearest Pages by Meaning": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nächste Seiten nach Bedeutung"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Πλησιέστερες σελίδες κατά νόημα"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pages les plus proches par le sens"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pagine più vicine per significato"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найближчі сторінки за змістом"
+          }
+        }
+      }
+    },
     "New Topic": {
       "localizations": {
         "de": {
@@ -2398,6 +2432,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Немає вільного порту для llama-server."
+          }
+        }
+      }
+    },
+    "No matching pages": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine passenden Seiten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Καμία σελίδα δεν ταιριάζει"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucune page correspondante"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna pagina corrispondente"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Немає відповідних сторінок"
           }
         }
       }

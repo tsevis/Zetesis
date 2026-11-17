@@ -59,6 +59,23 @@ enum VectorSearch {
         return best
     }
 
+    /// Calibrated on 960 pages of the library and 12 queries (bge-m3, 2026-11-17): unrelated pages
+    /// rarely scored above the floor, and a window below the best page keeps scores comparable across
+    /// queries whose best pages differ widely. Against keeping the nearest 300 pages, the share of
+    /// keyword-labelled relevant pages among those kept rose from 10% to 32%, and the labelled relevant
+    /// pages kept fell from 70% to 27% (a lower bound: pages on the topic without the keyword count as
+    /// misses). Retune when the model changes.
+    static let minimumScore: Float = 0.45
+    static let windowBelowBest: Float = 0.12
+
+    /// The pages close enough to count: within the window below the best one, and above the floor.
+    /// `pages` are best first, as `nearest` returns them.
+    static func relevant(_ pages: [PageScore]) -> [PageScore] {
+        guard let best = pages.first?.score else { return [] }
+        let cutoff = max(minimumScore, best - windowBelowBest)
+        return pages.filter { $0.score >= cutoff }
+    }
+
     /// Books ranked by their nearest pages: the best one, plus less for the next two.
     static func books(from pages: [PageScore]) -> [BookScore] {
         let grouped = Dictionary(grouping: pages) { PageID.book(of: $0.id) }

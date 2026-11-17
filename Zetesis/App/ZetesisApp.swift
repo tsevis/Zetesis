@@ -50,4 +50,7 @@ struct ReaderTarget: Codable, Hashable {
     let terms: [String]
     let page: Int
     let rowid: Int64?
+    /// The book's pages nearest in meaning to the search, best first; nil for a search by words
+    /// (and for reader windows saved before search by meaning, which restore without it).
+    let nearest: [Int64]?
 }

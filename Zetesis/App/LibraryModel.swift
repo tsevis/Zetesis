@@ -46,7 +46,7 @@ final class LibraryModel {
     private var bestPages: [Int64: [PageHit]] = [:]
     /// Counts the searches shown, so passages fetched for an earlier one are not kept for this one
     /// (the same text searched by words and then by meaning, for instance).
-    private var searchGeneration = 0
+    private(set) var searchGeneration = 0
     private let vectors = VectorStore()
     private let embedder = QueryEmbedder()
     private var quitObserver: NSObjectProtocol?
