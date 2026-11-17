@@ -7,6 +7,40 @@
     "%lld": {
       "shouldTranslate": false
     },
+    "%lld Books Selected": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Bücher ausgewählt"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld βιβλία επιλεγμένα"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld livres sélectionnés"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld libri selezionati"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вибрано книжок: %lld"
+          }
+        }
+      }
+    },
     "%lld Greek books wait for Tesseract": {
       "localizations": {
         "de": {
@@ -1422,6 +1456,40 @@
         }
       }
     },
+    "Drag them onto a topic in the sidebar, or choose one here.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ziehe sie auf ein Thema in der Seitenleiste oder wähle hier eines."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Σύρε τα σε ένα θέμα στην πλαϊνή στήλη ή διάλεξε ένα εδώ."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fais-les glisser sur un sujet dans la barre latérale, ou choisis-en un ici."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trascinali su un argomento nella barra laterale, o scegline uno qui."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перетягни їх на тему в бічній панелі або вибери тут."
+          }
+        }
+      }
+    },
     "Every book of the search in one .md file": {
       "localizations": {
         "de": {
@@ -2296,6 +2364,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Збіги в назві, авторі чи темі: %lld"
+          }
+        }
+      }
+    },
+    "Move to Topic": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu Thema verschieben"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Μετακίνηση σε θέμα"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Déplacer vers un sujet"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sposta in argomento"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перемістити до теми"
           }
         }
       }
@@ -4204,36 +4306,36 @@
         }
       }
     },
-    "To file a book under it, use the topic menu on the book’s page.": {
+    "To file books under it, drag them onto it from the list of books.": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Um ein Buch darunter abzulegen, verwende das Themenmenü auf der Seite des Buches."
+            "value": "Um Bücher darunter abzulegen, ziehe sie aus der Bücherliste darauf."
           }
         },
         "el": {
           "stringUnit": {
             "state": "translated",
-            "value": "Για να βάλεις ένα βιβλίο σε αυτό, χρησιμοποίησε το μενού θέματος στη σελίδα του βιβλίου."
+            "value": "Για να βάλεις βιβλία σε αυτό, σύρε τα πάνω του από τη λίστα των βιβλίων."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pour y classer un livre, utilisez le menu du thème sur la page du livre."
+            "value": "Pour y classer des livres, fais-les glisser dessus depuis la liste des livres."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Per archiviare un libro qui, usa il menu dell’argomento nella pagina del libro."
+            "value": "Per archiviarvi dei libri, trascinali su di esso dall’elenco dei libri."
           }
         },
         "uk": {
           "stringUnit": {
             "state": "translated",
-            "value": "Щоб віднести до неї книжку, скористайтеся меню теми на сторінці книжки."
+            "value": "Щоб додати до неї книжки, перетягни їх на неї зі списку книжок."
           }
         }
       }

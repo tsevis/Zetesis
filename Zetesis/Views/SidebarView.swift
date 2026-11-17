@@ -4,6 +4,8 @@ struct SidebarView: View {
     @Environment(LibraryModel.self) private var model
     @State private var newTopic = ""
     @State private var isNamingTopic = false
+    /// The topic a dragged book hovers over.
+    @State private var dropTarget: String?
 
     var body: some View {
         @Bindable var model = model
@@ -15,7 +17,19 @@ struct SidebarView: View {
             }
             Section {
                 ForEach(model.topics, id: \.name) { topic in
-                    row(Topic.displayName(topic.name), systemImage: "folder", shelf: .topic(topic.name))
+                    let isDropTarget = dropTarget == topic.name
+                    row(Topic.displayName(topic.name), systemImage: isDropTarget ? "folder.fill.badge.plus" : "folder",
+                        shelf: .topic(topic.name))
+                        .background {
+                            if isDropTarget {
+                                RoundedRectangle(cornerRadius: 5).fill(Color.accentColor.opacity(0.25)).padding(-4)
+                            }
+                        }
+                        .dropDestination(for: String.self) { items, _ in
+                            model.fileDropped(BookDrag.ids(in: items), under: topic.name)
+                        } isTargeted: { isOver in
+                            if isOver { dropTarget = topic.name } else if dropTarget == topic.name { dropTarget = nil }
+                        }
                         .contextMenu {
                             if topic.count == 0 {
                                 Button("Remove Topic") { model.removeTopic(topic.name) }
@@ -32,7 +46,7 @@ struct SidebarView: View {
             Button("Create") { model.addTopic(newTopic) }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("To file a book under it, use the topic menu on the book’s page.")
+            Text("To file books under it, drag them onto it from the list of books.")
         }
         .safeAreaInset(edge: .bottom) {
             VStack(alignment: .leading, spacing: 10) {

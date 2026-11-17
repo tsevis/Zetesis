@@ -282,3 +282,14 @@ def test_reindexing_a_book_drops_the_vectors_of_its_old_pages():
     assert [r[0] >> build_index.PAGE_BITS for r in con.execute("SELECT id FROM vectors")] == [2]
     # The app trusts a book's embedded row: while it stays, the app keeps searching the old vectors.
     assert [r[0] for r in con.execute("SELECT book FROM embedded")] == [2]
+
+
+def test_filing_several_books_keeps_their_tags_and_drops_the_auto_mark():
+    # Books dragged onto a topic are written in one locked rewrite; their tags must survive the move.
+    import set_topic
+    topics = {"a": {"topic": "Old", "tags": ["x"], "auto": True}, "b": {"topic": "Old", "tags": []},
+              "c": {"topic": "Other", "tags": ["y"]}}
+    filed = set_topic.filed(topics, "New", ["a", "b", "d"])
+    assert filed == {"a": {"topic": "New", "tags": ["x"]}, "b": {"topic": "New", "tags": []},
+                     "c": {"topic": "Other", "tags": ["y"]}, "d": {"topic": "New", "tags": []}}
+    assert topics["a"]["topic"] == "Old"

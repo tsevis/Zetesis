@@ -12,8 +12,8 @@ struct ResultsView: View {
             } else if model.isQuerying {
                 results
             } else {
-                List(model.shelfBooks, selection: $model.selectedBookID) { book in
-                    BookRow(book: book).tag(book.id)
+                List(model.shelfBooks, selection: $model.selectedBookIDs) { book in
+                    BookRow(book: book).tag(book.id).draggable(BookDrag.payload(book.id))
                 }
             }
         }
@@ -25,15 +25,16 @@ struct ResultsView: View {
         @Bindable var model = model
         let hits = model.visibleHits
         let titles = model.visibleTitleMatches
-        return List(selection: $model.selectedBookID) {
+        return List(selection: $model.selectedBookIDs) {
             if !titles.isEmpty {
                 Section("In the title, author or topic · \(titles.count)") {
-                    ForEach(titles.prefix(12)) { BookRow(book: $0).tag($0.id) }
+                    ForEach(titles.prefix(12)) { BookRow(book: $0).tag($0.id).draggable(BookDrag.payload($0.id)) }
                 }
             }
             Section("Inside the texts · \(hits.count) books") {
                 ForEach(hits) { hit in
                     HitRow(hit: hit, query: model.outcome.query).tag(hit.book.id)
+                        .draggable(BookDrag.payload(hit.book.id))
                 }
             }
         }

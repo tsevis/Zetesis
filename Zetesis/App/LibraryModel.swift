@@ -55,7 +55,7 @@ final class LibraryModel {
 
     var shelf: Shelf = .all
     var sortOrder: SortOrder = .relevance
-    var selectedBookID: Int64?
+    var selectedBookIDs: Set<Int64> = []
     var searchText = "" {
         didSet { if searchText != oldValue { scheduleSearch() } }
     }
@@ -93,7 +93,9 @@ final class LibraryModel {
 
     var isQuerying: Bool { !outcome.text.isEmpty }
     var libraryIsReachable: Bool { library.map { FileManager.default.fileExists(atPath: $0.path) } ?? false }
-    var selectedBook: Book? { selectedBookID.flatMap { booksByID[$0] } }
+    /// The book shown in the detail column: only when exactly one is selected.
+    var selectedBook: Book? { selectedBookIDs.count == 1 ? selectedBookIDs.first.flatMap { booksByID[$0] } : nil }
+    var selectedBooks: [Book] { selectedBookIDs.compactMap { booksByID[$0] } }
     var bookCount: Int { booksByID.count }
 
     func open(_ folder: URL) {
@@ -260,7 +262,8 @@ final class LibraryModel {
         averagePages = books.isEmpty ? 1 : Double(books.reduce(0) { $0 + $1.pages }) / Double(books.count)
         recentIDs = Set(books.sorted { $0.added > $1.added }.prefix(Self.recentCount).map(\.id))
         listTopics()
-        if let selected = selectedBookID, booksByID[selected] == nil { selectedBookID = nil }
+        let stillThere = selectedBookIDs.filter { booksByID[$0] != nil }
+        if stillThere != selectedBookIDs { selectedBookIDs = stillThere }
     }
 
     private func listTopics() {
@@ -293,18 +296,32 @@ final class LibraryModel {
 
     /// Sets a book's topic by hand (no longer automatic) and lets the engine re-index it.
     func setTopic(_ topic: String, for book: Book) {
-        guard let library else { return }
+        setTopic(topic, for: [book])
+    }
+
+    /// Files books under a topic by hand in one write, then lets the engine re-index them once.
+    func setTopic(_ topic: String, for books: [Book]) {
+        guard let library, !books.isEmpty else { return }
         Task {
             do {
-                try await TopicEditor.set(topic: topic, key: book.key, library: library)
+                try await TopicEditor.set(topic: topic, keys: books.map(\.key), library: library)
                 // Shown at once; the engine's update then writes it to the index.
-                booksByID[book.id] = book.with(topic: topic)
-                install(Array(booksByID.values))
+                let moved = Dictionary(uniqueKeysWithValues: books.map { ($0.id, $0.with(topic: topic)) })
+                install(Array(booksByID.merging(moved) { _, new in new }.values))
                 updater.run(now: true)
             } catch {
                 errorMessage = error.localizedDescription
             }
         }
+    }
+
+    /// Books dropped on a topic: a dragged book that is part of the selection brings the whole selection.
+    func fileDropped(_ ids: [Int64], under topic: String) -> Bool {
+        let dropped = Set(ids)
+        let moving = dropped.isDisjoint(with: selectedBookIDs) ? dropped : dropped.union(selectedBookIDs)
+        let books = moving.compactMap { booksByID[$0] }.filter { $0.topic != topic || $0.autoTopic }
+        setTopic(topic, for: books)
+        return !moving.isEmpty
     }
 
     func exportMarkdown() async throws -> String {

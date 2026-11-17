@@ -42,8 +42,9 @@ French and Ukrainian, following the system's language.
 - **Topics.** The sidebar groups books by topic. A new book takes the topic of the other books in its
   folder; otherwise the folder's name when it holds several books; otherwise its first metadata
   subject; otherwise the topic of the books it resembles. Automatic topics are marked ✨ until you
-  confirm or change them. The **+** beside Topics makes a new, empty topic; a book's topic menu files
-  it there, or under a new name. On request, a `_Topics/` folder in the library holds the same grouping as
+  confirm or change them. The **+** beside Topics makes a new, empty topic. To file books, drag
+  them from the list onto a topic in the sidebar (⌘- or ⇧-click selects several), or use a book's topic
+  menu. On request, a `_Topics/` folder in the library holds the same grouping as
   symlinks. Nothing is moved.
 - **Scanned books.** PDFs whose pages are mostly images are read with macOS's text recognition, in
   the background after the normal update, the ones with the least text first. A book becomes
