@@ -179,9 +179,11 @@ final class LibraryModel {
             do {
                 let result: SearchOutcome
                 if let meaning {
+                    let words = try await engine.search(text, books: booksByID, averagePages: averagePages)
                     let vector = try await embedder.embed(text, with: meaning)
                     guard !Task.isCancelled else { return }
-                    result = try await engine.searchByMeaning(text, vector: vector, books: booksByID)
+                    let near = try await engine.searchByMeaning(text, vector: vector, books: booksByID)
+                    result = Fusion.blend(words: words, meaning: near)
                 } else {
                     result = try await engine.search(text, books: booksByID, averagePages: averagePages)
                 }
@@ -209,13 +211,24 @@ final class LibraryModel {
         return pages
     }
 
-    /// A result's pages: the nearest ones of a search by meaning, the best matches of a search by words.
-    func pages(of book: Int64, limit: Int, engine: SearchEngine) async throws -> [PageHit] {
-        if let nearest = outcome.meaningPages {
-            return try await engine.pages(ids: Array((nearest[book] ?? []).prefix(limit)))
+    /// A result's pages: those with the words first (the best `limit`, or with `limit` nil every one in
+    /// page order), then the pages nearest in meaning that are not among them.
+    func pages(of book: Int64, limit: Int?, engine: SearchEngine) async throws -> [PageHit] {
+        let cap = limit ?? SearchEngine.bookPageHitLimit
+        var found: [PageHit] = []
+        if !outcome.query.isEmpty, outcome.hits.contains(where: { $0.book.id == book && $0.matchesWords }) {
+            if limit == nil {
+                found = try await engine.allPages(book: book, query: outcome.query)
+            } else {
+                let ranked = outcome.wordPages <= SearchEngine.rankedPassageLimit
+                found = try await engine.bestPages(book: book, query: outcome.query, limit: cap, ranked: ranked)
+            }
         }
-        let ranked = outcome.totalPages <= SearchEngine.rankedPassageLimit
-        return try await engine.bestPages(book: book, query: outcome.query, limit: limit, ranked: ranked)
+        if found.count < cap, let nearest = outcome.meaningPages?[book] {
+            let shown = Set(found.map(\.id))
+            found += try await engine.pages(ids: Array(nearest.filter { !shown.contains($0) }.prefix(cap - found.count)))
+        }
+        return found
     }
 
     // MARK: - Index

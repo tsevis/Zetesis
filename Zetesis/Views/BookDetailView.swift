@@ -55,11 +55,7 @@ struct BookDetailView: View {
             return
         }
         isLoading = true
-        if model.outcome.meaningPages == nil {
-            pages = (try? await engine.allPages(book: book.id, query: model.outcome.query)) ?? []
-        } else {
-            pages = (try? await model.pages(of: book.id, limit: SearchEngine.bookPageHitLimit, engine: engine)) ?? []
-        }
+        pages = (try? await model.pages(of: book.id, limit: nil, engine: engine)) ?? []
         isLoading = false
     }
 

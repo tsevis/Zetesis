@@ -32,8 +32,11 @@ struct Book: Identifiable, Hashable, Sendable {
 /// A book with matching pages for the current search.
 struct BookHit: Identifiable, Hashable, Sendable {
     let book: Book
+    /// Pages that contain the words; for a book found only by meaning, its pages near the query.
     let pages: Int
     let score: Double
+    /// The book has pages with the search's words (not only pages near it in meaning).
+    let matchesWords: Bool
     var id: Int64 { book.id }
 }
 
@@ -70,5 +73,7 @@ struct SearchOutcome: Sendable {
     let meaningPages: [Int64: [Int64]]?
 
     var totalPages: Int { hits.reduce(0) { $0 + $1.pages } }
+    /// Pages with the words, which decides how their passages are fetched (SearchEngine.rankedPassageLimit).
+    var wordPages: Int { hits.reduce(0) { $0 + ($1.matchesWords ? $1.pages : 0) } }
     static let empty = SearchOutcome(text: "", query: "", titleMatches: [], hits: [], elapsed: 0, meaningPages: nil)
 }
