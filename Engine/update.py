@@ -2,7 +2,8 @@
 
 Waits until nothing in the folder has changed for SETTLE_S seconds (so a copy in progress is not
 indexed half-way), then: inventory → extract new/changed books → classify new books → rebuild the
-index → topic folders, if kept → text recognition of scanned books, a slice at a time. Does nothing when the folder is unchanged. Repeats if books were added
+index → topic folders, if kept → text recognition of scanned books, a slice at a time → page vectors
+for search by meaning, if switched on. Does nothing when the folder is unchanged. Repeats if books were added
 while it was working. Only one copy runs at a time.
 
 Started by the app when it opens and when the folder changes, and by the LaunchAgent (install_watcher.py)
@@ -18,6 +19,7 @@ import time
 
 import build_index
 import classify_new
+import embed
 import extract
 import inventory
 import make_topic_folders
@@ -29,6 +31,7 @@ from config import (
     LOCK,
     LOG,
     ROOT,
+    SEMANTIC,
     SKIP_DIRS,
     TOPIC_FOLDER,
     TOPIC_FOLDERS,
@@ -131,6 +134,14 @@ def recognise_scans(since: float) -> bool:
     return changed()
 
 
+def describe_pages(since: float) -> bool:
+    """Page vectors for search by meaning, until done or the library changes; True if it was interrupted."""
+    changed = lambda: last_change() >= since
+    phase("meaning")
+    embed.main(changed)
+    return changed()
+
+
 def make_private(folder) -> None:
     """The index, text caches and topics hold what the library contains: readable by its owner only."""
     folder.mkdir(parents=True, exist_ok=True)
@@ -180,11 +191,18 @@ def main() -> int:
             print(f"@done {int(did)}", flush=True)
             if last_change() < started:
                 try:
-                    if not recognise_scans(started):
-                        return 0
+                    interrupted = recognise_scans(started)
                 except Exception:
                     log.exception("text recognition failed")
                     return 1
+                if not interrupted and SEMANTIC:
+                    try:
+                        interrupted = describe_pages(started)
+                    except Exception:
+                        log.exception("search by meaning failed")
+                        return 1
+                if not interrupted:
+                    return 0
             log.info("files were added during the update, once more")
     return 0
 

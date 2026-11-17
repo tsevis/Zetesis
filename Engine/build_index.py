@@ -46,6 +46,13 @@ COMMIT_EVERY = 50  # books per transaction; readers see progress as it is commit
 DEFLATE_LEVEL = 6
 TOKENIZE = "tokenize='unicode61 remove_diacritics 2'"
 META_COLS = "title, author, topic, tags, key"
+# Search by meaning (embed.py). vectors: one row per described page, same id as pages; v is a
+# little-endian float32 scale followed by int8 components. embedded: the text_stamp each book had when
+# its pages were described, so a book is described again only when its text changes.
+VECTOR_SCHEMA = """
+CREATE TABLE IF NOT EXISTS vectors(id INTEGER PRIMARY KEY, v BLOB NOT NULL);
+CREATE TABLE IF NOT EXISTS embedded(book INTEGER PRIMARY KEY, stamp TEXT NOT NULL, model TEXT NOT NULL);
+"""
 META_FIELDS = ("title", "author", "topic", "tags", "auto_topic", "files", "md", "folder",
                "extra_folders", "images")
 
@@ -73,7 +80,7 @@ CREATE TABLE pages(id INTEGER PRIMARY KEY, src TEXT, page INTEGER, images TEXT, 
 CREATE VIEW pages_text AS SELECT id, unz(z) AS text FROM pages;
 CREATE VIRTUAL TABLE pages_fts USING fts5(text, content='pages_text', content_rowid='id', {TOKENIZE}, prefix='3');
 CREATE TABLE info(name TEXT PRIMARY KEY, value);
-"""
+""" + VECTOR_SCHEMA
 
 
 def deflate(text: str) -> bytes:
@@ -90,6 +97,7 @@ def connect(path: Path) -> sqlite3.Connection:
     con.create_function("unz", 1, unz, deterministic=True)
     con.create_function("fold", 1, fold, deterministic=True)
     con.execute("PRAGMA journal_mode=WAL")
+    con.executescript(VECTOR_SCHEMA)  # indexes made before search by meaning
     return con
 
 
@@ -167,6 +175,9 @@ def delete_pages(con: sqlite3.Connection, book_id: int) -> None:
     con.execute("INSERT INTO pages_fts(pages_fts, rowid, text) "
                 "SELECT 'delete', id, fold(unz(z)) FROM pages WHERE id BETWEEN ? AND ?", (lo, hi))
     con.execute("DELETE FROM pages WHERE id BETWEEN ? AND ?", (lo, hi))
+    con.execute("DELETE FROM vectors WHERE id BETWEEN ? AND ?", (lo, hi))
+    # The app keeps a book's vectors for as long as its embedded row stays (Zetesis/Services/VectorStore).
+    con.execute("DELETE FROM embedded WHERE book = ?", (book_id,))
 
 
 def insert_pages(con: sqlite3.Connection, book_id: int, rows: list) -> None:
@@ -237,6 +248,27 @@ def sync(con: sqlite3.Connection, inv: list, topics: dict, keep: dict | None = N
     return changed
 
 
+def carry_vectors(con: sqlite3.Connection, previous: Path | None) -> None:
+    """Copy page vectors from the previous index file for books whose text is unchanged.
+
+    A page's id depends on dedupe(): an index of another schema version may number pages differently,
+    so its vectors are not carried and the books are described again.
+    """
+    if current_version(previous) != SCHEMA_VERSION:
+        return
+    con.execute("ATTACH DATABASE ? AS old", (str(previous),))
+    try:
+        tables = {r[0] for r in con.execute("SELECT name FROM old.sqlite_master WHERE type = 'table'")}
+        if {"vectors", "embedded"} <= tables:
+            con.execute("INSERT INTO embedded SELECT e.book, e.stamp, e.model FROM old.embedded e "
+                        "JOIN books b ON b.id = e.book AND b.text_stamp = e.stamp")
+            con.execute(f"INSERT INTO vectors SELECT v.id, v.v FROM old.vectors v "
+                        f"WHERE v.id >> {PAGE_BITS} IN (SELECT book FROM embedded)")
+            con.commit()
+    finally:
+        con.execute("DETACH DATABASE old")
+
+
 def current_version(path: Path | None) -> int:
     if path is None or not path.exists():
         return 0
@@ -266,6 +298,7 @@ def build_fresh(inv: list, topics: dict, previous: Path | None) -> int:
     con.executescript(SCHEMA)
     con.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
     changed = sync(con, inv, topics, keep)
+    carry_vectors(con, previous)
     con.execute("INSERT INTO pages_fts(pages_fts) VALUES('optimize')")
     con.commit()
     con.close()

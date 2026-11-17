@@ -96,6 +96,11 @@ struct Row {
     func int(_ i: Int32) -> Int64 { sqlite3_column_int64(stmt, i) }
     func double(_ i: Int32) -> Double { sqlite3_column_double(stmt, i) }
     func text(_ i: Int32) -> String { sqlite3_column_text(stmt, i).map { String(cString: $0) } ?? "" }
+    func bytes(_ i: Int32) -> [UInt8] {
+        // sqlite3_column_blob first: it fixes the format that sqlite3_column_bytes then measures.
+        guard let pointer = sqlite3_column_blob(stmt, i) else { return [] }
+        return Array(UnsafeRawBufferPointer(start: pointer, count: Int(sqlite3_column_bytes(stmt, i))))
+    }
     func optionalText(_ i: Int32) -> String? { sqlite3_column_text(stmt, i).map { String(cString: $0) } }
 
     func value(_ i: Int32) -> Value {

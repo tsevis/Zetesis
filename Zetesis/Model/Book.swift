@@ -66,7 +66,9 @@ struct SearchOutcome: Sendable {
     /// Books with matching pages, best first.
     let hits: [BookHit]
     let elapsed: TimeInterval
+    /// A search by meaning: each book's nearest pages, best first. nil for a search by words.
+    let meaningPages: [Int64: [Int64]]?
 
     var totalPages: Int { hits.reduce(0) { $0 + $1.pages } }
-    static let empty = SearchOutcome(text: "", query: "", titleMatches: [], hits: [], elapsed: 0)
+    static let empty = SearchOutcome(text: "", query: "", titleMatches: [], hits: [], elapsed: 0, meaningPages: nil)
 }

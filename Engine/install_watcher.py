@@ -30,8 +30,9 @@ def remove() -> None:
 
 
 def passed_on() -> dict:
-    """The app's choices (topic folders, the OCR helper) as the app set them for this run."""
-    return {k: os.environ[k] for k in ("ZETESIS_TOPIC_FOLDERS", "ZETESIS_OCR") if os.environ.get(k)}
+    """The app's choices (topic folders, the OCR helper, search by meaning) as the app set them for this run."""
+    keys = ("ZETESIS_TOPIC_FOLDERS", "ZETESIS_OCR", "ZETESIS_SEMANTIC", "ZETESIS_LLAMA_SERVER", "ZETESIS_EMBED_MODEL")
+    return {k: os.environ[k] for k in keys if os.environ.get(k)}
 
 
 def install() -> int:

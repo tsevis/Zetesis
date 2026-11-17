@@ -28,7 +28,8 @@ struct ContentView: View {
                     }
                 }
                 .searchable(text: $model.searchText, placement: .toolbar,
-                            prompt: "Search the whole library")
+                            prompt: model.isSearchingByMeaning ? "Describe what you are looking for"
+                                                               : "Search the whole library")
                 .toolbar { toolbar }
             }
         }
@@ -43,6 +44,13 @@ struct ContentView: View {
     private var toolbar: some ToolbarContent {
         @Bindable var model = model
         ToolbarItemGroup(placement: .primaryAction) {
+            if model.canSearchByMeaning {
+                Toggle(isOn: $model.searchesByMeaning) {
+                    Label("Search by Meaning", systemImage: "sparkle.magnifyingglass")
+                }
+                .help("Find pages about what you describe, even in other words or another language")
+            }
+
             Picker("Sort", selection: $model.sortOrder) {
                 ForEach(LibraryModel.SortOrder.allCases) { Text($0.label).tag($0) }
             }

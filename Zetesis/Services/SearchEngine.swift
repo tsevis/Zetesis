@@ -5,16 +5,22 @@ import Foundation
 final class SearchEngine: Sendable {
     static let titleMatchLimit = 200
     static let bookPageHitLimit = 1000
+    /// Pages a search by meaning gathers before grouping them into books.
+    static let meaningPageLimit = 300
     private static let snippetTokens = 22
+    /// A page found by meaning has no matched word to centre on: its opening is shown.
+    private static let openingChars = 260
 
     let databaseURL: URL
     private let ranker: SQLiteConnection
     private let reader: SQLiteConnection
     private let rankQueue = DispatchQueue(label: "zetesis.rank", qos: .userInitiated)
     private let readQueue = DispatchQueue(label: "zetesis.read", qos: .userInitiated)
+    private let vectors: VectorStore
 
-    init(databaseURL: URL) throws {
+    init(databaseURL: URL, vectors: VectorStore) throws {
         self.databaseURL = databaseURL
+        self.vectors = vectors
         ranker = try SQLiteConnection(readOnly: databaseURL)
         reader = try SQLiteConnection(readOnly: databaseURL)
     }
@@ -66,19 +72,59 @@ final class SearchEngine: Sendable {
                 run += 1
             }
             if run > 0 { counts.append((current, run)) }
-            var titles: [Book] = []
-            try ranker.query("SELECT rowid FROM meta_fts WHERE meta_fts MATCH ? ORDER BY rank LIMIT ?",
-                             [.text(query), .int(Int64(Self.titleMatchLimit))]) { r in
-                if let book = books[r.int(0)] { titles.append(book) }
-            }
+            let titles = try Self.titleMatches(query, books: books, in: ranker)
             let hits = counts.compactMap { id, n -> BookHit? in
                 guard let book = books[id] else { return nil }
                 return BookHit(book: book, pages: n,
                                score: Ranking.score(hits: n, pages: book.pages, averagePages: averagePages))
             }.sorted { ($0.score, $0.pages) > ($1.score, $1.pages) }
             return SearchOutcome(text: text, query: query, titleMatches: titles, hits: hits,
-                                 elapsed: Date().timeIntervalSince(started))
+                                 elapsed: Date().timeIntervalSince(started), meaningPages: nil)
         }
+    }
+
+    /// Books with the pages nearest in meaning to `vector` (the query's, from QueryEmbedder), plus the
+    /// books whose metadata matches the words.
+    func searchByMeaning(_ text: String, vector: [Float], books: [Int64: Book]) async throws -> SearchOutcome {
+        let query = QueryParser.ftsQuery(text)
+        return try await run(on: rankQueue) { [ranker, vectors] in
+            let started = Date()
+            let ranked = VectorSearch.books(from: try vectors.nearest(vector, limit: Self.meaningPageLimit, in: ranker))
+            let hits = ranked.compactMap { r in
+                books[r.book].map { BookHit(book: $0, pages: r.pages.count, score: Double(r.score)) }
+            }
+            let titles = query.isEmpty ? [] : try Self.titleMatches(query, books: books, in: ranker)
+            return SearchOutcome(text: text, query: "", titleMatches: titles, hits: hits,
+                                 elapsed: Date().timeIntervalSince(started),
+                                 meaningPages: Dictionary(uniqueKeysWithValues: ranked.map { ($0.book, $0.pages) }))
+        }
+    }
+
+    /// Pages by rowid, in the order given, each with its opening as the passage.
+    func pages(ids: [Int64]) async throws -> [PageHit] {
+        guard !ids.isEmpty else { return [] }
+        let marks = Array(repeating: "?", count: ids.count).joined(separator: ",")
+        let sql = "SELECT id, page, src, images, substr(unz(z), 1, \(Self.openingChars * 2)) FROM pages WHERE id IN (\(marks))"
+        let found = try await run(on: readQueue) { [reader] in
+            var hits: [Int64: PageHit] = [:]
+            try reader.query(sql, ids.map { .int($0) }) { r in
+                let opening = r.text(4).split(whereSeparator: \.isWhitespace).joined(separator: " ")
+                let passage = opening.count > Self.openingChars ? opening.prefix(Self.openingChars) + "…" : opening
+                hits[r.int(0)] = PageHit(id: r.int(0), page: Int(r.int(1)), source: r.text(2),
+                                         images: Self.strings(r.text(3)), snippet: Snippet(marked: passage))
+            }
+            return hits
+        }
+        return ids.compactMap { found[$0] }
+    }
+
+    private static func titleMatches(_ query: String, books: [Int64: Book], in db: SQLiteConnection) throws -> [Book] {
+        var titles: [Book] = []
+        try db.query("SELECT rowid FROM meta_fts WHERE meta_fts MATCH ? ORDER BY rank LIMIT ?",
+                     [.text(query), .int(Int64(titleMatchLimit))]) { r in
+            if let book = books[r.int(0)] { titles.append(book) }
+        }
+        return titles
     }
 
     /// Above this many matching pages in the whole library, passages are taken in page order instead of

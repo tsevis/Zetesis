@@ -4,6 +4,7 @@ Run from the repository root:  python3 EngineTests/test_engine.py  (or with pyte
 """
 import os
 import signal
+import sqlite3
 import stat
 import subprocess
 import sys
@@ -242,3 +243,42 @@ if __name__ == "__main__":
             failed += 1
             print("FAIL", name, type(e).__name__, e)
     sys.exit(1 if failed else 0)
+
+
+def _index_with_vectors(path: Path, stamps: dict) -> "sqlite3.Connection":
+    """An index with one page per book, each page described by a vector."""
+    import build_index
+    con = build_index.connect(path)
+    con.executescript(build_index.SCHEMA)
+    con.execute(f"PRAGMA user_version = {build_index.SCHEMA_VERSION}")
+    for book, stamp in stamps.items():
+        con.execute("INSERT INTO books(id, key, text_stamp) VALUES(?, ?, ?)", (book, f"book{book}", stamp))
+        build_index.insert_pages(con, book, [{"src": "pdf", "page": 1, "text": f"text of book {book}"}])
+        con.execute("INSERT INTO vectors VALUES(?, ?)", (book << build_index.PAGE_BITS, b"v"))
+        con.execute("INSERT INTO embedded VALUES(?, ?, 'bge-m3')", (book, stamp))
+    con.commit()
+    return con
+
+
+def test_a_full_rebuild_keeps_the_vectors_of_books_whose_text_did_not_change():
+    # Describing a large library takes hours: a rebuild must not throw that away, nor keep a changed book's.
+    import build_index
+    folder = Path(tempfile.mkdtemp())
+    _index_with_vectors(folder / "old.db", {1: "same", 2: "before"}).close()
+    new = build_index.connect(folder / "new.db")
+    new.executescript(build_index.SCHEMA)
+    new.execute(f"PRAGMA user_version = {build_index.SCHEMA_VERSION}")
+    new.executemany("INSERT INTO books(id, key, text_stamp) VALUES(?, ?, ?)", [(1, "book1", "same"), (2, "book2", "after")])
+    build_index.carry_vectors(new, folder / "old.db")
+    assert [r[0] for r in new.execute("SELECT book FROM embedded")] == [1]
+    assert [r[0] >> build_index.PAGE_BITS for r in new.execute("SELECT id FROM vectors")] == [1]
+
+
+def test_reindexing_a_book_drops_the_vectors_of_its_old_pages():
+    # Page ids are reused when a book's text changes: an old vector would describe the wrong page.
+    import build_index
+    con = _index_with_vectors(Path(tempfile.mkdtemp()) / "index.db", {1: "a", 2: "b"})
+    build_index.delete_pages(con, 1)
+    assert [r[0] >> build_index.PAGE_BITS for r in con.execute("SELECT id FROM vectors")] == [2]
+    # The app trusts a book's embedded row: while it stays, the app keeps searching the old vectors.
+    assert [r[0] for r in con.execute("SELECT book FROM embedded")] == [2]

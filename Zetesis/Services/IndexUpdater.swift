@@ -7,7 +7,7 @@ import Observation
 @MainActor @Observable
 final class IndexUpdater {
     enum Phase: String {
-        case idle, waiting, inventory, text, classify, index, topics, ocr
+        case idle, waiting, inventory, text, classify, index, topics, ocr, meaning
 
         var label: String {
             switch self {
@@ -19,6 +19,7 @@ final class IndexUpdater {
             case .index: String(localized: "Updating the index…")
             case .topics: String(localized: "Topic folders…")
             case .ocr: String(localized: "Recognising scanned pages…")
+            case .meaning: String(localized: "Preparing search by meaning…")
             }
         }
     }
@@ -28,6 +29,8 @@ final class IndexUpdater {
     private(set) var booksExtracted = 0
     /// Scanned books recognised so far in this run, and how many were waiting.
     private(set) var recognition: (done: Int, total: Int)?
+    /// Books described for search by meaning so far in this run, and how many were waiting.
+    private(set) var describing: (done: Int, total: Int)?
     /// Scanned books with Greek titles left unread because Tesseract is not installed, as of the last
     /// run that reached text recognition.
     private(set) var greekBooksWaiting = 0
@@ -72,6 +75,7 @@ final class IndexUpdater {
         isRunning = true
         booksExtracted = 0
         recognition = nil
+        describing = nil
         lastError = nil
         wasBusy = false
         do {
@@ -127,6 +131,7 @@ final class IndexUpdater {
             if line.hasPrefix("@phase "), let p = Phase(rawValue: String(line.dropFirst(7))) {
                 phase = p
                 if p != .ocr { recognition = nil }
+                if p != .meaning { describing = nil }
             } else if line == "@busy" {
                 wasBusy = true
             } else if line.hasPrefix("text: ") {
@@ -136,6 +141,9 @@ final class IndexUpdater {
             } else if line.hasPrefix("@ocr ") {
                 let numbers = line.split(separator: " ").dropFirst().compactMap { Int($0) }
                 if numbers.count == 2 { recognition = (numbers[0], numbers[1]) }
+            } else if line.hasPrefix("@meaning ") {
+                let numbers = line.split(separator: " ").dropFirst().compactMap { Int($0) }
+                if numbers.count == 2 { describing = (numbers[0], numbers[1]) }
             } else if line == "@indexed" || line.hasPrefix("@done ") {
                 // The index changed while the run goes on (text recognition can take hours).
                 onFinish?()

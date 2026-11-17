@@ -1,4 +1,4 @@
-import Foundation
+import AppKit
 import Observation
 
 /// What the window shows: the library's books, the current search and its results.
@@ -26,6 +26,8 @@ final class LibraryModel {
     static let recentCount = 200
     static let minimumQueryLength = 2
     static let typingPause: Duration = .milliseconds(220)
+    /// A search by meaning reads the whole query, so it waits for a longer pause in the typing.
+    static let meaningTypingPause: Duration = .milliseconds(600)
     static let bestPagesPerRow = 2
 
     private(set) var library: URL?
@@ -42,12 +44,27 @@ final class LibraryModel {
     private var declaredTopics: [String] = []
     private var searchTask: Task<Void, Never>?
     private var bestPages: [Int64: [PageHit]] = [:]
+    /// Counts the searches shown, so passages fetched for an earlier one are not kept for this one
+    /// (the same text searched by words and then by meaning, for instance).
+    private var searchGeneration = 0
+    private let vectors = VectorStore()
+    private let embedder = QueryEmbedder()
+    private var quitObserver: NSObjectProtocol?
+    /// llama-server and the model, when search by meaning is switched on in Settings and both are found.
+    private(set) var meaningTools: EmbeddingTools.Found?
 
     var shelf: Shelf = .all
     var sortOrder: SortOrder = .relevance
     var selectedBookID: Int64?
     var searchText = "" {
         didSet { if searchText != oldValue { scheduleSearch() } }
+    }
+    /// The search field looks for pages by meaning rather than by their words.
+    var searchesByMeaning = EmbeddingTools.searchesByMeaning {
+        didSet {
+            EmbeddingTools.searchesByMeaning = searchesByMeaning
+            if searchesByMeaning != oldValue { scheduleSearch() }
+        }
     }
 
     let updater = IndexUpdater()
@@ -56,10 +73,25 @@ final class LibraryModel {
         updater.onFinish = { [weak self] in
             Task { await self?.reopen(force: true) }
         }
+        quitObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.willTerminateNotification, object: nil, queue: .main
+        ) { [embedder] _ in embedder.stop() }
+        Task.detached { QueryEmbedder.stopOrphans() }
+        refreshMeaningTools()
         if let saved = LibraryLocation.library { open(saved) }
     }
 
-    var isQuerying: Bool { !outcome.query.isEmpty }
+    var canSearchByMeaning: Bool { meaningTools != nil }
+    var isSearchingByMeaning: Bool { searchesByMeaning && canSearchByMeaning }
+
+    /// Looks for llama-server and the model again (after Settings changed, or they were installed).
+    func refreshMeaningTools() {
+        meaningTools = EmbeddingTools.isPrepared ? EmbeddingTools.find() : nil
+        if !canSearchByMeaning { embedder.stop() }
+        if searchesByMeaning { scheduleSearch() }
+    }
+
+    var isQuerying: Bool { !outcome.text.isEmpty }
     var libraryIsReachable: Bool { library.map { FileManager.default.fileExists(atPath: $0.path) } ?? false }
     var selectedBook: Book? { selectedBookID.flatMap { booksByID[$0] } }
     var bookCount: Int { booksByID.count }
@@ -140,13 +172,22 @@ final class LibraryModel {
             return
         }
         isSearching = true
-        searchTask = Task { [booksByID, averagePages] in
-            try? await Task.sleep(for: Self.typingPause)
+        let meaning = isSearchingByMeaning ? meaningTools : nil
+        searchTask = Task { [booksByID, averagePages, embedder] in
+            try? await Task.sleep(for: meaning == nil ? Self.typingPause : Self.meaningTypingPause)
             guard !Task.isCancelled else { return }
             do {
-                let result = try await engine.search(text, books: booksByID, averagePages: averagePages)
+                let result: SearchOutcome
+                if let meaning {
+                    let vector = try await embedder.embed(text, with: meaning)
+                    guard !Task.isCancelled else { return }
+                    result = try await engine.searchByMeaning(text, vector: vector, books: booksByID)
+                } else {
+                    result = try await engine.search(text, books: booksByID, averagePages: averagePages)
+                }
                 guard !Task.isCancelled else { return }
                 bestPages = [:]
+                searchGeneration += 1
                 outcome = result
                 errorMessage = nil
             } catch is CancellationError {
@@ -162,12 +203,19 @@ final class LibraryModel {
     func bestPages(for book: Int64) async -> [PageHit] {
         if let cached = bestPages[book] { return cached }
         guard let engine, isQuerying else { return [] }
-        let query = outcome.query
-        let ranked = outcome.totalPages <= SearchEngine.rankedPassageLimit
-        let pages = (try? await engine.bestPages(book: book, query: query, limit: Self.bestPagesPerRow,
-                                                 ranked: ranked)) ?? []
-        if query == outcome.query { bestPages[book] = pages }
+        let generation = searchGeneration
+        let pages = (try? await pages(of: book, limit: Self.bestPagesPerRow, engine: engine)) ?? []
+        if generation == searchGeneration { bestPages[book] = pages }
         return pages
+    }
+
+    /// A result's pages: the nearest ones of a search by meaning, the best matches of a search by words.
+    func pages(of book: Int64, limit: Int, engine: SearchEngine) async throws -> [PageHit] {
+        if let nearest = outcome.meaningPages {
+            return try await engine.pages(ids: Array((nearest[book] ?? []).prefix(limit)))
+        }
+        let ranked = outcome.totalPages <= SearchEngine.rankedPassageLimit
+        return try await engine.bestPages(book: book, query: outcome.query, limit: limit, ranked: ranked)
     }
 
     // MARK: - Index
@@ -181,7 +229,7 @@ final class LibraryModel {
         }
         if !force, engine?.databaseURL == url { return }
         do {
-            let engine = try SearchEngine(databaseURL: url)
+            let engine = try SearchEngine(databaseURL: url, vectors: vectors)
             let books = try await engine.loadBooks()
             self.engine = engine
             install(books)
@@ -250,6 +298,8 @@ final class LibraryModel {
         guard let engine, let library else { throw SQLiteError(message: String(localized: "There is no index yet.")) }
         let scope = shelf == .all ? nil : shelfTitle
         return try await MarkdownExport.build(outcome: outcome, hits: visibleHits, titleMatches: visibleTitleMatches,
-                                              scope: scope, library: library, engine: engine)
+                                              scope: scope, library: library) { book in
+            try await self.pages(of: book, limit: MarkdownExport.passagesPerBook, engine: engine)
+        }
     }
 }

@@ -5,6 +5,8 @@ struct SettingsView: View {
     @State private var backgroundUpdates = BackgroundAgent.isInstalled
     @State private var agentError: String?
     @State private var topicFolders = false
+    @State private var prepareMeaning = EmbeddingTools.isPrepared
+    @State private var meaningTools = EmbeddingTools.find()
 
     var body: some View {
         Form {
@@ -39,6 +41,23 @@ struct SettingsView: View {
                     .disabled(model.updater.isRunning || model.library == nil)
                 Button("Open Log") { NSWorkspace.shared.open(LibraryLocation.log) }
             }
+            Section("Search by Meaning") {
+                Toggle("Prepare search by meaning", isOn: $prepareMeaning)
+                    .onChange(of: prepareMeaning) { _, on in setPrepareMeaning(on) }
+                    .disabled(model.library == nil || (meaningTools == nil && !prepareMeaning))
+                Text("Finds pages about what you describe, even when they use other words or another language. Every page is read once by the bge-m3 model, in the background, newest books first. For a large library this takes hours; each book can be searched by meaning as soon as it is done.")
+                    .font(.callout).foregroundStyle(.secondary)
+                if meaningTools == nil {
+                    Text("It needs llama.cpp and the bge-m3 model (605 MB). In Terminal:").font(.callout)
+                    Text(verbatim: EmbeddingTools.installCommand + "\n" + EmbeddingTools.downloadCommand)
+                        .font(.caption.monospaced())
+                        .textSelection(.enabled)
+                    Button("Look Again") {
+                        meaningTools = EmbeddingTools.find()
+                        model.refreshMeaningTools()
+                    }
+                }
+            }
         }
         .onAppear { topicFolders = model.library.map(LibraryLocation.keepsTopicFolders) ?? false }
         .formStyle(.grouped)
@@ -52,6 +71,19 @@ struct SettingsView: View {
         // The LaunchAgent carries the choice in its environment, so it is written again.
         if backgroundUpdates { setAgent(true) }
         if on { model.updater.run(now: true) }
+    }
+
+    private func setPrepareMeaning(_ on: Bool) {
+        guard on != EmbeddingTools.isPrepared else { return }
+        EmbeddingTools.isPrepared = on
+        model.refreshMeaningTools()
+        // The LaunchAgent carries the choice in its environment, so it is written again.
+        if backgroundUpdates { setAgent(true) }
+        if on {
+            model.updater.run(now: true)
+        } else if model.updater.phase == .meaning {
+            model.updater.stop()
+        }
     }
 
     private func setAgent(_ on: Bool) {
