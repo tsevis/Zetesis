@@ -30,7 +30,9 @@ French and Ukrainian, following the system's language.
   newest books first; for a large library this takes hours, and each book can be searched by meaning
   as soon as it is done. The ✨ magnifier in the toolbar adds meaning to the search by words: the two
   rankings are merged (reciprocal rank fusion), so books with the exact words keep their highlighted
-  passages and books found only by meaning show their nearest pages. It needs `brew install llama.cpp` and the model,
+  passages and books found only by meaning list their “Nearest Pages by Meaning”, in the book
+  view and in the reader. Only pages close to the question count, so a book unrelated to it stays
+  out of the results. It needs `brew install llama.cpp` and the model,
   `hf download ggml-org/bge-m3-Q8_0-GGUF bge-m3-q8_0.gguf`; nothing is downloaded by the app.
 - **A reader that opens at the page.** It opens the PDF at the page that matched, with the words
   highlighted, and lists every other matching page beside it. Books without a PDF show the indexed
@@ -72,7 +74,9 @@ French and Ukrainian, following the system's language.
 - Search by meaning. The engine (`embed.py`) runs `llama-server` with bge-m3 and stores one vector per
   page in the index (int8 with a scale, about 1 KB a page), keeping them across full rebuilds for
   books whose text did not change. The app embeds the query with its own `llama-server`, stopped
-  after ten idle minutes, and compares it with every page vector in memory (Accelerate).
+  after ten idle minutes, and compares it with every page vector in memory (Accelerate). A page is
+  kept when its cosine similarity is at least 0.45 and within 0.12 of the best page's
+  (`VectorSearch.relevant`); both limits were set on a labelled sample of the library.
 - **Design for large libraries.**
   - A page's rowid encodes its book (`book << 17 | n`). Ranking books therefore only reads the FTS
     doclist and never looks a page up.
