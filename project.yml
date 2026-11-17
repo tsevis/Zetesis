@@ -11,6 +11,10 @@ settings:
     MACOSX_DEPLOYMENT_TARGET: "15.0"
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGN_STYLE: Manual
+  configs:
+    # A Developer ID build otherwise carries get-task-allow, and Apple's notary rejects it.
+    Release:
+      CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
 targets:
   Zetesis:
     type: application
