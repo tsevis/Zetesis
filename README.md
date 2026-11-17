@@ -28,8 +28,9 @@ French and Ukrainian, following the system's language.
   they use other words, or another language: a Greek question finds English pages. Every page is read
   once by the [bge-m3](https://huggingface.co/BAAI/bge-m3) model through llama.cpp, in the background,
   newest books first; for a large library this takes hours, and each book can be searched by meaning
-  as soon as it is done. The ✨ magnifier in the toolbar switches the search field between words and
-  meaning. It needs `brew install llama.cpp` and the model,
+  as soon as it is done. The ✨ magnifier in the toolbar adds meaning to the search by words: the two
+  rankings are merged (reciprocal rank fusion), so books with the exact words keep their highlighted
+  passages and books found only by meaning show their nearest pages. It needs `brew install llama.cpp` and the model,
   `hf download ggml-org/bge-m3-Q8_0-GGUF bge-m3-q8_0.gguf`; nothing is downloaded by the app.
 - **A reader that opens at the page.** It opens the PDF at the page that matched, with the words
   highlighted, and lists every other matching page beside it. Books without a PDF show the indexed

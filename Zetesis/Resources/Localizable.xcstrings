@@ -708,6 +708,40 @@
         }
       }
     },
+    "Also find pages about what you describe, even in other words or another language": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Findet auch Seiten zu dem, was Sie beschreiben, selbst in anderen Worten oder einer anderen Sprache"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Βρίσκει επίσης σελίδες για ό,τι περιγράφετε, ακόμη και με άλλες λέξεις ή σε άλλη γλώσσα"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouve aussi les pages qui parlent de ce que vous décrivez, même en d’autres mots ou dans une autre langue"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trova anche pagine su ciò che descrivi, anche con altre parole o in un’altra lingua"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Також знаходить сторінки про те, що ви описуєте, навіть іншими словами чи іншою мовою"
+          }
+        }
+      }
+    },
     "Also update while Zetesis is closed": {
       "localizations": {
         "de": {
@@ -1520,40 +1554,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Файли:"
-          }
-        }
-      }
-    },
-    "Find pages about what you describe, even in other words or another language": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Findet Seiten zu dem, was Sie beschreiben, auch in anderen Worten oder einer anderen Sprache"
-          }
-        },
-        "el": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Βρίσκει σελίδες για ό,τι περιγράφετε, ακόμη και με άλλες λέξεις ή σε άλλη γλώσσα"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trouve les pages qui parlent de ce que vous décrivez, même en d’autres mots ou dans une autre langue"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trova pagine su ciò che descrivi, anche con altre parole o in un’altra lingua"
-          }
-        },
-        "uk": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Знаходить сторінки про те, що ви описуєте, навіть іншими словами чи іншою мовою"
           }
         }
       }

@@ -76,7 +76,8 @@ final class SearchEngine: Sendable {
             let hits = counts.compactMap { id, n -> BookHit? in
                 guard let book = books[id] else { return nil }
                 return BookHit(book: book, pages: n,
-                               score: Ranking.score(hits: n, pages: book.pages, averagePages: averagePages))
+                               score: Ranking.score(hits: n, pages: book.pages, averagePages: averagePages),
+                               matchesWords: true)
             }.sorted { ($0.score, $0.pages) > ($1.score, $1.pages) }
             return SearchOutcome(text: text, query: query, titleMatches: titles, hits: hits,
                                  elapsed: Date().timeIntervalSince(started), meaningPages: nil)
@@ -91,7 +92,7 @@ final class SearchEngine: Sendable {
             let started = Date()
             let ranked = VectorSearch.books(from: try vectors.nearest(vector, limit: Self.meaningPageLimit, in: ranker))
             let hits = ranked.compactMap { r in
-                books[r.book].map { BookHit(book: $0, pages: r.pages.count, score: Double(r.score)) }
+                books[r.book].map { BookHit(book: $0, pages: r.pages.count, score: Double(r.score), matchesWords: false) }
             }
             let titles = query.isEmpty ? [] : try Self.titleMatches(query, books: books, in: ranker)
             return SearchOutcome(text: text, query: "", titleMatches: titles, hits: hits,

@@ -48,7 +48,7 @@ struct ContentView: View {
                 Toggle(isOn: $model.searchesByMeaning) {
                     Label("Search by Meaning", systemImage: "sparkle.magnifyingglass")
                 }
-                .help("Find pages about what you describe, even in other words or another language")
+                .help("Also find pages about what you describe, even in other words or another language")
             }
 
             Picker("Sort", selection: $model.sortOrder) {
