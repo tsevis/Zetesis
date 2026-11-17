@@ -90,7 +90,8 @@ final class SearchEngine: Sendable {
         let query = QueryParser.ftsQuery(text)
         return try await run(on: rankQueue) { [ranker, vectors] in
             let started = Date()
-            let ranked = VectorSearch.books(from: try vectors.nearest(vector, limit: Self.meaningPageLimit, in: ranker))
+            let nearest = try vectors.nearest(vector, limit: Self.meaningPageLimit, in: ranker)
+            let ranked = VectorSearch.books(from: VectorSearch.relevant(nearest))
             let hits = ranked.compactMap { r in
                 books[r.book].map { BookHit(book: $0, pages: r.pages.count, score: Double(r.score), matchesWords: false) }
             }

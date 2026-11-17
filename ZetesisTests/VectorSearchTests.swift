@@ -24,3 +24,17 @@ final class VectorSearchTests: XCTestCase {
         XCTAssertEqual(VectorSearch.books(from: pages).map(\.book), [1, 2])
     }
 }
+
+/// Search by meaning always has a nearest page, however unrelated: without a cut-off every book of the
+/// library comes back. The cut-off is relative to the best page (scores differ a lot between queries)
+/// and absolute (when even the best page is weak, meaning tells relevant from unrelated no better than chance).
+final class MeaningCutoffTests: XCTestCase {
+    private func page(_ n: Int64, _ score: Float) -> PageScore { PageScore(id: n, score: score) }
+
+    func testPagesFarBelowTheBestOrUnderTheFloorAreDropped() {
+        let pages = [page(1, 0.66), page(2, 0.60), page(3, 0.53), page(4, 0.41)]
+        XCTAssertEqual(VectorSearch.relevant(pages).map(\.id), [1, 2])
+        XCTAssertEqual(VectorSearch.relevant([page(5, 0.44), page(6, 0.40)]).map(\.id), [])
+        XCTAssertEqual(VectorSearch.relevant([page(7, 0.50), page(8, 0.46), page(9, 0.44)]).map(\.id), [7, 8])
+    }
+}

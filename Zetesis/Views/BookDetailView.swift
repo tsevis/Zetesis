@@ -28,13 +28,13 @@ struct BookDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .quickLookPreview($preview)
-        .task(id: "\(model.outcome.query)#\(book.id)") { await load() }
+        .task(id: "\(model.searchGeneration)#\(book.id)") { await load() }
     }
 
     @ViewBuilder
     private var hitsList: some View {
         HStack {
-            Text("Pages with Matches").font(.title3.bold())
+            Text(foundByMeaningOnly ? "Nearest Pages by Meaning" : "Pages with Matches").font(.title3.bold())
             if isLoading { ProgressView().controlSize(.small) }
             Spacer()
             Text("\(pages.count)\(pages.count == SearchEngine.bookPageHitLimit ? "+" : "")")
@@ -59,10 +59,16 @@ struct BookDetailView: View {
         isLoading = false
     }
 
+    /// The book is in the results only because its pages are near the search in meaning.
+    private var foundByMeaningOnly: Bool {
+        model.outcome.hits.contains { $0.book.id == book.id && !$0.matchesWords }
+    }
+
     private func open(page: Int, rowid: Int64?) {
         let terms = QueryParser.highlightTerms(model.outcome.text).map(\.text)
         openWindow(id: ReaderTarget.windowID,
-                   value: ReaderTarget(bookID: book.id, query: model.outcome.query, terms: terms, page: page, rowid: rowid))
+                   value: ReaderTarget(bookID: book.id, query: model.outcome.query, terms: terms, page: page,
+                                       rowid: rowid, nearest: model.outcome.meaningPages?[book.id]))
     }
 }
 

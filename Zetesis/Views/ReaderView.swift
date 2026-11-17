@@ -29,7 +29,10 @@ struct ReaderView: View {
             }
             .navigationSplitViewColumnWidth(min: 200, ideal: 260)
             .overlay {
-                if hits.isEmpty { Text("No search").foregroundStyle(.secondary) }
+                if hits.isEmpty {
+                    Text(target.query.isEmpty && target.nearest == nil ? "No search" : "No matching pages")
+                        .foregroundStyle(.secondary)
+                }
             }
         } detail: {
             if let book, let library = model.library {
@@ -53,8 +56,13 @@ struct ReaderView: View {
         }
         // Keyed on the index: a window restored at launch opens before the index does.
         .task(id: model.engine?.databaseURL) {
-            guard let engine = model.engine, !target.query.isEmpty else { return }
-            hits = (try? await engine.allPages(book: target.bookID, query: target.query)) ?? []
+            guard let engine = model.engine else { return }
+            // Pages with the words first, then the pages nearest in meaning that are not among them.
+            let words = target.query.isEmpty ? []
+                : (try? await engine.allPages(book: target.bookID, query: target.query)) ?? []
+            let shown = Set(words.map(\.id))
+            let near = (target.nearest ?? []).filter { !shown.contains($0) }
+            hits = words + ((try? await engine.pages(ids: near)) ?? [])
         }
     }
 }
