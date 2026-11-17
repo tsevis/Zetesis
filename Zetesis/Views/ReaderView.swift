@@ -6,6 +6,8 @@ struct ReaderView: View {
     @Environment(LibraryModel.self) private var model
     let target: ReaderTarget
     @State private var hits: [PageHit] = []
+    /// How many of `hits` contain the words; the rest are near the search in meaning.
+    @State private var wordHits = 0
     @State private var current: PageHit.ID?
     @State private var page: Int
 
@@ -49,8 +51,7 @@ struct ReaderView: View {
             }
         }
         .navigationTitle(book?.title ?? "Zetesis")
-        .navigationSubtitle(hits.isEmpty ? String(localized: "p. \(page)")
-                            : String(localized: "Pages with matches: \(hits.count) · p. \(page)"))
+        .navigationSubtitle(subtitle)
         .onChange(of: current) { _, id in
             if let hit = hits.first(where: { $0.id == id }) { page = hit.page }
         }
@@ -62,8 +63,17 @@ struct ReaderView: View {
                 : (try? await engine.allPages(book: target.bookID, query: target.query)) ?? []
             let shown = Set(words.map(\.id))
             let near = (target.nearest ?? []).filter { !shown.contains($0) }
+            wordHits = words.count
             hits = words + ((try? await engine.pages(ids: near)) ?? [])
         }
+    }
+
+    private var subtitle: String {
+        let nearest = hits.count - wordHits
+        if hits.isEmpty { return String(localized: "p. \(page)") }
+        if nearest == 0 { return String(localized: "Pages with matches: \(wordHits) · p. \(page)") }
+        if wordHits == 0 { return String(localized: "Nearest pages by meaning: \(nearest) · p. \(page)") }
+        return String(localized: "Pages with matches: \(wordHits) · nearest by meaning: \(nearest) · p. \(page)")
     }
 }
 

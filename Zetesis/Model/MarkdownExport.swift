@@ -11,8 +11,12 @@ enum MarkdownExport {
         var out = ["# " + String(localized: "Search: \(escape(outcome.text))"), ""]
         var summary = String(localized: "Exported \(date)")
         if let scope { summary += " · \(scope)" }
-        let pageTotal = hits.reduce(0) { $0 + $1.pages }
-        summary += " · " + String(localized: "Books with matches: \(hits.count) · matching pages: \(pageTotal)")
+        let byWords = hits.filter(\.matchesWords)
+        let pageTotal = byWords.reduce(0) { $0 + $1.pages }
+        summary += " · " + String(localized: "Books with matches: \(byWords.count) · matching pages: \(pageTotal)")
+        if byWords.count < hits.count {
+            summary += " · " + String(localized: "Found by meaning only: \(hits.count - byWords.count)")
+        }
         summary += " · " + String(localized: "Matching title, author or topic: \(titleMatches.count)")
         out += [summary, ""]
         if !titleMatches.isEmpty {
@@ -49,7 +53,8 @@ enum MarkdownExport {
         meta.append("**\(String(localized: "Topic")):** \(escape(Topic.displayName(book.topic)))"
                     + (book.autoTopic ? " (\(String(localized: "automatic")))" : ""))
         if !book.tags.isEmpty { meta.append("**\(String(localized: "Tags")):** \(escape(book.tags.joined(separator: ", ")))") }
-        meta.append("**\(String(localized: "Pages with matches")):** \(hit.pages)")
+        let counted = hit.matchesWords ? String(localized: "Pages with matches") : String(localized: "Nearest pages by meaning")
+        meta.append("**\(counted):** \(hit.pages)")
         lines += [meta.joined(separator: " · "), ""]
         var files = book.files.map { "[\(($0 as NSString).pathExtension.uppercased())](\(fileURL($0, library: library)))" }
         if let folder = book.folder { files.append("[\(String(localized: "md/images folder"))](\(fileURL(folder, library: library)))") }
@@ -81,7 +86,7 @@ enum MarkdownExport {
 
     private static func fileURL(_ relative: String, library: URL, page: Int? = nil) -> String {
         // Parentheses end a Markdown link target, and file names often have them ("Title (Author).pdf").
-        let url = LibraryLocation.url(relative, in: library).absoluteString
+        let url = library.appending(path: relative).absoluteString
             .replacingOccurrences(of: "(", with: "%28").replacingOccurrences(of: ")", with: "%29")
         return page.map { "\(url)#page=\($0)" } ?? url
     }
