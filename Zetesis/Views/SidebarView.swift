@@ -84,6 +84,9 @@ struct IndexStatus: View {
                 if let progress = model.updater.recognition {
                     Text("Scanned book \(progress.done + 1) of \(progress.total)").foregroundStyle(.secondary)
                 }
+                if let progress = model.updater.describing, progress.done < progress.total {
+                    Text("Book \(progress.done + 1) of \(progress.total)").foregroundStyle(.secondary)
+                }
             } else if let updated = model.lastUpdated {
                 Text("Index: \(updated.formatted(.relative(presentation: .named)))")
                     .foregroundStyle(.secondary)

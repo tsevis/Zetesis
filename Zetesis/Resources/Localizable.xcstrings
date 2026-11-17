@@ -810,6 +810,40 @@
         }
       }
     },
+    "Book %lld of %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buch %lld von %lld"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Βιβλίο %lld από %lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Livre %lld sur %lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Libro %lld di %lld"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Книга %lld з %lld"
+          }
+        }
+      }
+    },
     "Books": {
       "localizations": {
         "de": {
@@ -1320,6 +1354,40 @@
         }
       }
     },
+    "Describe what you are looking for": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beschreiben Sie, was Sie suchen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Περιγράψτε τι αναζητάτε"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Décrivez ce que vous cherchez"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descrivi ciò che cerchi"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Опишіть, що ви шукаєте"
+          }
+        }
+      }
+    },
     "Every book of the search in one .md file": {
       "localizations": {
         "de": {
@@ -1456,6 +1524,40 @@
         }
       }
     },
+    "Find pages about what you describe, even in other words or another language": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Findet Seiten zu dem, was Sie beschreiben, auch in anderen Worten oder einer anderen Sprache"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Βρίσκει σελίδες για ό,τι περιγράφετε, ακόμη και με άλλες λέξεις ή σε άλλη γλώσσα"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouve les pages qui parlent de ce que vous décrivez, même en d’autres mots ou dans une autre langue"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trova pagine su ciò che descrivi, anche con altre parole o in un’altra lingua"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знаходить сторінки про те, що ви описуєте, навіть іншими словами чи іншою мовою"
+          }
+        }
+      }
+    },
     "Finder": {
       "localizations": {
         "de": {
@@ -1486,6 +1588,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Finder"
+          }
+        }
+      }
+    },
+    "Finds pages about what you describe, even when they use other words or another language. Every page is read once by the bge-m3 model, in the background, newest books first. For a large library this takes hours; each book can be searched by meaning as soon as it is done.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Findet Seiten zu dem, was Sie beschreiben, auch wenn sie andere Worte oder eine andere Sprache verwenden. Jede Seite wird einmal vom Modell bge-m3 im Hintergrund gelesen, die neuesten Bücher zuerst. Bei einer großen Bibliothek dauert das Stunden; jedes Buch ist nach Bedeutung durchsuchbar, sobald es fertig ist."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Βρίσκει σελίδες για ό,τι περιγράφετε, ακόμη κι όταν χρησιμοποιούν άλλες λέξεις ή άλλη γλώσσα. Κάθε σελίδα διαβάζεται μία φορά από το μοντέλο bge-m3, στο παρασκήνιο, πρώτα τα νεότερα βιβλία. Για μεγάλη βιβλιοθήκη αυτό διαρκεί ώρες· κάθε βιβλίο γίνεται αναζητήσιμο με νόημα μόλις ολοκληρωθεί."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouve les pages qui parlent de ce que vous décrivez, même quand elles emploient d’autres mots ou une autre langue. Chaque page est lue une fois par le modèle bge-m3, en arrière-plan, en commençant par les livres les plus récents. Pour une grande bibliothèque, cela prend des heures ; chaque livre peut être cherché par le sens dès qu’il est prêt."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trova pagine su ciò che descrivi, anche quando usano altre parole o un’altra lingua. Ogni pagina viene letta una volta dal modello bge-m3, in background, a partire dai libri più recenti. Per una biblioteca grande ci vogliono ore; ogni libro è cercabile per significato appena è pronto."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знаходить сторінки про те, що ви описуєте, навіть коли вони вживають інші слова чи іншу мову. Кожну сторінку один раз читає модель bge-m3 у фоновому режимі, починаючи з найновіших книг. Для великої бібліотеки це триває години; кожну книгу можна шукати за змістом, щойно її опрацьовано."
           }
         }
       }
@@ -1858,6 +1994,40 @@
         }
       }
     },
+    "It needs llama.cpp and the bge-m3 model (605 MB). In Terminal:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dafür werden llama.cpp und das Modell bge-m3 (605 MB) benötigt. Im Terminal:"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Χρειάζεται το llama.cpp και το μοντέλο bge-m3 (605 MB). Στο Τερματικό:"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il faut llama.cpp et le modèle bge-m3 (605 Mo). Dans le Terminal :"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Servono llama.cpp e il modello bge-m3 (605 MB). Nel Terminale:"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Потрібні llama.cpp і модель bge-m3 (605 МБ). У Терміналі:"
+          }
+        }
+      }
+    },
     "Keep topic folders in the library": {
       "localizations": {
         "de": {
@@ -1990,6 +2160,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Облік книг…"
+          }
+        }
+      }
+    },
+    "Look Again": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erneut suchen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Νέος έλεγχος"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chercher à nouveau"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerca di nuovo"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Перевірити знову"
           }
         }
       }
@@ -2160,6 +2364,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Немає файлу для читання"
+          }
+        }
+      }
+    },
+    "No free port for llama-server.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kein freier Port für llama-server."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δεν βρέθηκε ελεύθερη θύρα για το llama-server."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun port libre pour llama-server."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nessuna porta libera per llama-server."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Немає вільного порту для llama-server."
           }
         }
       }
@@ -2466,6 +2704,74 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сторінок: %@ · книг: %@ · %lld мс"
+          }
+        }
+      }
+    },
+    "Prepare search by meaning": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suche nach Bedeutung vorbereiten"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προετοιμασία αναζήτησης με νόημα"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Préparer la recherche par le sens"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepara la ricerca per significato"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Підготувати пошук за змістом"
+          }
+        }
+      }
+    },
+    "Preparing search by meaning…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suche nach Bedeutung wird vorbereitet …"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Προετοιμασία αναζήτησης με νόημα…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Préparation de la recherche par le sens…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparazione della ricerca per significato…"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Підготовка пошуку за змістом…"
           }
         }
       }
@@ -2874,6 +3180,108 @@
           "stringUnit": {
             "state": "translated",
             "value": "Пошук - %@"
+          }
+        }
+      }
+    },
+    "Search by Meaning": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suche nach Bedeutung"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αναζήτηση με νόημα"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recherche par le sens"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ricerca per significato"
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пошук за змістом"
+          }
+        }
+      }
+    },
+    "Search by meaning could not start llama-server.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Suche nach Bedeutung konnte llama-server nicht starten."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Η αναζήτηση με νόημα δεν μπόρεσε να ξεκινήσει το llama-server."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La recherche par le sens n’a pas pu démarrer llama-server."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La ricerca per significato non è riuscita ad avviare llama-server."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пошук за змістом не зміг запустити llama-server."
+          }
+        }
+      }
+    },
+    "Search by meaning got no answer from llama-server.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Suche nach Bedeutung hat keine Antwort von llama-server erhalten."
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Η αναζήτηση με νόημα δεν πήρε απάντηση από το llama-server."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La recherche par le sens n’a reçu aucune réponse de llama-server."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La ricerca per significato non ha ricevuto risposta da llama-server."
+          }
+        },
+        "uk": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пошук за змістом не отримав відповіді від llama-server."
           }
         }
       }

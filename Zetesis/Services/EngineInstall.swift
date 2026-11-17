@@ -53,6 +53,11 @@ enum EngineInstall {
         if let ocr = Bundle.main.url(forAuxiliaryExecutable: "zetesis-ocr") {
             env["ZETESIS_OCR"] = ocr.path(percentEncoded: false)
         }
+        if EmbeddingTools.isPrepared, let tools = EmbeddingTools.find() {
+            env["ZETESIS_SEMANTIC"] = "1"
+            env["ZETESIS_LLAMA_SERVER"] = tools.server.path(percentEncoded: false)
+            env["ZETESIS_EMBED_MODEL"] = tools.model.path(percentEncoded: false)
+        }
         return env
     }
 }

@@ -6,7 +6,8 @@ and one index file per library, so read-only folders and network shares work too
 already keeps its data in a _SEARCH folder inside it goes on using that folder.
 
 Optional, from the app: ZETESIS_TOPIC_FOLDERS=1 keeps a folder of topic symlinks inside the library,
-and ZETESIS_OCR names the text-recognition helper for scanned books.
+ZETESIS_OCR names the text-recognition helper for scanned books, and ZETESIS_SEMANTIC=1 describes pages
+for search by meaning with ZETESIS_LLAMA_SERVER (llama.cpp) and ZETESIS_EMBED_MODEL (bge-m3, GGUF).
 """
 import hashlib
 import json
@@ -42,6 +43,9 @@ TOPIC_FOLDER = _legacy_topics if _legacy_topics.is_dir() else ROOT / TOPICS_DIRN
 # Unset: kept only where the folder already exists.
 TOPIC_FOLDERS = os.environ.get("ZETESIS_TOPIC_FOLDERS", "1" if TOPIC_FOLDER.is_dir() else "0") == "1"
 OCR_TOOL = os.environ.get("ZETESIS_OCR") or None
+SEMANTIC = os.environ.get("ZETESIS_SEMANTIC") == "1"
+LLAMA_SERVER = os.environ.get("ZETESIS_LLAMA_SERVER") or None
+EMBED_MODEL = os.environ.get("ZETESIS_EMBED_MODEL") or None
 LOCK = APP_SUPPORT / f"{LIBRARY_ID}.lock"
 # Held only while topics.json is read and rewritten, so setting a topic never waits for an update.
 TOPICS_LOCK = APP_SUPPORT / f"{LIBRARY_ID}.topics.lock"

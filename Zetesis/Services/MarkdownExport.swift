@@ -5,7 +5,8 @@ enum MarkdownExport {
     static let passagesPerBook = 3
 
     static func build(outcome: SearchOutcome, hits: [BookHit], titleMatches: [Book], scope: String?,
-                      library: URL, engine: SearchEngine) async throws -> String {
+                      library: URL,
+                      pages: @MainActor (Int64) async throws -> [PageHit]) async throws -> String {
         let date = Date().formatted(date: .numeric, time: .shortened)
         var out = ["# " + String(localized: "Search: \(escape(outcome.text))"), ""]
         var summary = String(localized: "Exported \(date)")
@@ -21,12 +22,9 @@ enum MarkdownExport {
         }
         if !hits.isEmpty {
             out += ["## " + String(localized: "Inside the texts"), ""]
-            let ranked = outcome.totalPages <= SearchEngine.rankedPassageLimit
             for (n, hit) in hits.enumerated() {
                 try Task.checkCancellation()
-                let pages = try await engine.bestPages(book: hit.book.id, query: outcome.query, limit: passagesPerBook,
-                                                       ranked: ranked)
-                out += section(n + 1, hit: hit, pages: pages, library: library)
+                out += section(n + 1, hit: hit, pages: try await pages(hit.book.id), library: library)
             }
         }
         return out.joined(separator: "\n")

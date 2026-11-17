@@ -7,7 +7,7 @@ ones too), EPUB, DjVu, Word, RTF, OpenDocument, plain text and folders of Markdo
 folder of books works, Calibre libraries included, and nothing in it is moved or written to. Named after *zetesis* (ζήτησις), the ancient
 philosophers' word for inquiry: the search that goes on until it finds.
 
-**Version 0.4.0.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
+**Version 0.5.0.** SwiftUI, macOS 15 or later. The interface is in English, Greek, Italian, German,
 French and Ukrainian, following the system's language.
 
 ![Searching for "acanthus": 110 books with matches, each with the pages and passages where the word appears, and the chosen book's matching pages on the right.](documents/screenshots/search.png)
@@ -24,6 +24,13 @@ French and Ukrainian, following the system's language.
 - **Full-text search over every page.** Results arrive while you type. Each one names the pages
   where the words appear and shows the passages around them. `"two words"` searches a phrase,
   `geom*` a prefix, `OR` gives alternatives and `-word` excludes a word. Accents and case are ignored.
+- **Search by meaning.** Switched on in Settings, it finds pages about what you describe even when
+  they use other words, or another language: a Greek question finds English pages. Every page is read
+  once by the [bge-m3](https://huggingface.co/BAAI/bge-m3) model through llama.cpp, in the background,
+  newest books first; for a large library this takes hours, and each book can be searched by meaning
+  as soon as it is done. The ✨ magnifier in the toolbar switches the search field between words and
+  meaning. It needs `brew install llama.cpp` and the model,
+  `hf download ggml-org/bge-m3-Q8_0-GGUF bge-m3-q8_0.gguf`; nothing is downloaded by the app.
 - **A reader that opens at the page.** It opens the PDF at the page that matched, with the words
   highlighted, and lists every other matching page beside it. Books without a PDF show the indexed
   text of the page instead.
@@ -61,6 +68,10 @@ French and Ukrainian, following the system's language.
 - `OCRTool/` (Swift, PDFKit and Vision). `zetesis-ocr`, embedded in `Contents/MacOS`, recognises the
   pages of a PDF that have no text of their own, handing Greek pages to Tesseract when it is
   installed; the engine runs it one book at a time.
+- Search by meaning. The engine (`embed.py`) runs `llama-server` with bge-m3 and stores one vector per
+  page in the index (int8 with a scale, about 1 KB a page), keeping them across full rebuilds for
+  books whose text did not change. The app embeds the query with its own `llama-server`, stopped
+  after ten idle minutes, and compares it with every page vector in memory (Accelerate).
 - **Design for large libraries.**
   - A page's rowid encodes its book (`book << 17 | n`). Ranking books therefore only reads the FTS
     doclist and never looks a page up.
@@ -80,6 +91,7 @@ already keeps a `_SEARCH/` folder goes on using it.
 ```bash
 brew install xcodegen poppler djvulibre
 brew install tesseract tesseract-lang   # optional: OCR for Greek scans
+brew install llama.cpp                  # optional: search by meaning (plus the bge-m3 model)
 xcodegen generate
 xcodebuild -scheme Zetesis -configuration Release -derivedDataPath build/dd build
 ```
