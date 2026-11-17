@@ -22,6 +22,8 @@ struct ContentView: View {
                 } detail: {
                     if let book = model.selectedBook {
                         BookDetailView(book: book)
+                    } else if model.selectedBookIDs.count > 1 {
+                        SelectionView()
                     } else {
                         ContentUnavailableView("Choose a Book", systemImage: "book.closed",
                                                description: Text("Pages with matches appear here."))
